@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GIS with R — Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d1117;--sidebar-bg:#0a0e14;--panel-bg:#161b22;--panel-border:#21262d;
+    --accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;
+    --text:#e6edf3;--text-muted:#8b949e;--text-dim:#6e7681;
+    --code-bg:#010409;--code-border:#30363d;--hover:#1c2128;
+    --sidebar-w:280px;--header-h:56px;
+    --keyword:#ff7b72;--string:#a5d6ff;--comment:#8b949e;--number:#79c0ff;--func:#d2a8ff;--operator:#ff7b72;
+    --th-bg:#1c2128;--console-header-bg:#1c2128;
+  }
+  :root.light {
+    --bg:#f6f8fa;--sidebar-bg:#ffffff;--panel-bg:#ffffff;--panel-border:#d0d7de;
+    --accent:#0969da;--accent2:#1a7f37;--accent3:#cf222e;--accent4:#8250df;
+    --text:#24292f;--text-muted:#57606a;--text-dim:#6e7781;
+    --code-bg:#f6f8fa;--code-border:#d0d7de;--hover:#eaeef2;
+    --keyword:#cf222e;--string:#0a3069;--comment:#6e7781;--number:#0550ae;--func:#8250df;--operator:#cf222e;
+    --th-bg:#eaeef2;--console-header-bg:#eaeef2;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:15px;}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+  /* HEADER */
+  header{height:var(--header-h);background:var(--sidebar-bg);border-bottom:1px solid var(--panel-border);display:flex;align-items:center;padding:0 20px;position:fixed;top:0;left:0;right:0;z-index:100;gap:14px;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem;color:var(--text);letter-spacing:.02em;}
+  .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#1a6fe6,#58a6ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;}
+  .header-badge{background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.25);color:var(--accent);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:500;letter-spacing:.04em;}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text-muted);margin-right:4px;}
+  .hamburger svg{display:block;}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .search-box{display:flex;align-items:center;gap:8px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:6px;padding:5px 12px;font-size:.78rem;color:var(--text-muted);}
+  .search-box input{background:none;border:none;outline:none;color:var(--text);font-size:.78rem;width:140px;font-family:'Sora',sans-serif;}
+  .search-box input::placeholder{color:var(--text-dim);}
+  .theme-btn{background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-muted);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.75rem;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:6px;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;}
+  .theme-btn:hover{background:var(--hover);color:var(--text);border-color:var(--accent);}
+  .page-nav{display:flex;gap:4px;align-items:center;}
+  .nav-link{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;font-size:.75rem;font-weight:600;text-decoration:none;border:1px solid var(--panel-border);color:var(--text-muted);background:var(--panel-bg);transition:all .15s;letter-spacing:.02em;}
+  .nav-link:hover{background:var(--hover);color:var(--text);border-color:var(--accent);}
+  .nav-link.active{background:rgba(63,185,80,.12);border-color:var(--accent2);color:var(--accent2);}
+
+  /* LAYOUT */
+  .layout{display:flex;margin-top:var(--header-h);min-height:calc(100vh - var(--header-h));}
+
+  /* SIDEBAR */
+  aside{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--panel-border);position:fixed;top:var(--header-h);bottom:0;left:0;overflow-y:auto;overflow-x:hidden;padding:16px 0;scrollbar-width:thin;scrollbar-color:var(--panel-border) transparent;z-index:50;transition:transform .25s ease;}
+  aside::-webkit-scrollbar{width:4px;}
+  aside::-webkit-scrollbar-thumb{background:var(--panel-border);border-radius:2px;}
+  .sidebar-section{margin-bottom:4px;}
+  .sidebar-chapter{display:flex;align-items:center;justify-content:space-between;padding:9px 16px 9px 20px;cursor:pointer;color:var(--text-muted);font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;user-select:none;transition:background .15s,color .15s;}
+  .sidebar-chapter:hover{background:var(--hover);color:var(--text);}
+  .sidebar-chapter.open{color:var(--accent2);}
+  .chapter-label{display:flex;align-items:center;gap:8px;}
+  .chapter-dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0;}
+  .sidebar-chapter:not(.open) .chapter-dot{background:var(--text-dim);}
+  .chevron{transition:transform .25s;color:var(--text-dim);}
+  .sidebar-chapter.open .chevron{transform:rotate(90deg);color:var(--accent2);}
+  .sidebar-topics{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+  .sidebar-topics.open{max-height:2000px;}
+  .sidebar-topic{display:flex;align-items:center;gap:9px;padding:7px 16px 7px 38px;cursor:pointer;font-size:.8rem;color:var(--text-muted);transition:background .15s,color .15s;border-left:2px solid transparent;}
+  .sidebar-topic:hover{background:var(--hover);color:var(--text);}
+  .sidebar-topic.active{color:var(--accent2);background:rgba(63,185,80,.07);border-left-color:var(--accent2);}
+  .topic-icon{font-size:.65rem;opacity:.5;}
+
+  /* MAIN */
+  main{margin-left:var(--sidebar-w);flex:1;padding:40px 48px 80px;max-width:960px;width:100%;}
+  .content-section{display:none;}
+  .content-section.active{display:block;animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* HEADINGS */
+  h1{font-size:1.85rem;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:12px;letter-spacing:-.02em;}
+  .subtitle{color:var(--text-muted);font-size:.9rem;line-height:1.7;margin-bottom:32px;font-weight:300;}
+  h2{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--panel-border);display:flex;align-items:center;gap:10px;}
+  h2::before{content:'';display:inline-block;width:4px;height:18px;background:var(--accent2);border-radius:2px;flex-shrink:0;}
+  h3{font-size:.95rem;font-weight:600;color:var(--text-muted);margin:20px 0 8px;padding-left:12px;border-left:2px solid var(--panel-border);}
+  .section-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);color:var(--accent2);font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px;}
+  p{color:var(--text-muted);line-height:1.75;margin-bottom:12px;font-weight:300;font-size:.88rem;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;}
+
+  /* LAB HERO */
+  .lab-hero{background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(88,166,255,.06));border:1px solid var(--panel-border);border-radius:14px;padding:40px;margin-bottom:32px;position:relative;overflow:hidden;}
+  .lab-hero::before{content:'{}';position:absolute;right:40px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:7rem;font-weight:700;color:rgba(63,185,80,.06);pointer-events:none;line-height:1;}
+
+  /* SECTION WRAPPER */
+  .lab-section{margin-bottom:40px;}
+
+  /* EXERCISE CARD */
+  .ex-card{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:12px;overflow:hidden;margin-bottom:20px;transition:border-color .2s;}
+  .ex-card:hover{border-color:var(--accent2);}
+
+  .ex-header{display:flex;align-items:center;gap:12px;padding:13px 18px;background:var(--console-header-bg);border-bottom:1px solid var(--panel-border);cursor:pointer;user-select:none;}
+  .ex-header:hover{background:var(--hover);}
+  .ex-num{background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.3);color:var(--accent2);font-family:'JetBrains Mono',monospace;font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0;}
+  .ex-title{font-size:.85rem;font-weight:600;color:var(--text);flex:1;}
+  .ex-chevron{color:var(--text-dim);transition:transform .25s;flex-shrink:0;}
+  .ex-card.open .ex-chevron{transform:rotate(90deg);}
+  .ex-body{display:none;}
+  .ex-card.open .ex-body{display:block;}
+
+  /* CODE BLOCK */
+  .code-block{margin:0;border-radius:0;overflow:hidden;border:none;border-bottom:1px solid var(--panel-border);box-shadow:none;}
+  .console-header{display:flex;align-items:center;background:var(--console-header-bg);padding:8px 14px;border-bottom:1px solid var(--code-border);}
+  .console-dots{display:flex;gap:6px;margin-right:12px;}
+  .console-dots span{width:12px;height:12px;border-radius:50%;}
+  .console-dots span:nth-child(1){background:#f78166;}
+  .console-dots span:nth-child(2){background:#e3b341;}
+  .console-dots span:nth-child(3){background:#3fb950;}
+  .console-lang{font-family:'JetBrains Mono',monospace;font-size:.66rem;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;}
+  .console-actions{margin-left:auto;display:flex;align-items:center;gap:6px;}
+  .console-copy{background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:.7rem;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px;transition:background .15s,color .15s;}
+  .console-copy:hover{background:var(--panel-border);color:var(--text-muted);}
+  .console-copy.copied{color:var(--accent2);}
+  .view-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.25);color:var(--accent2);font-size:.68rem;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:5px;cursor:pointer;transition:background .15s;font-weight:600;}
+  .view-btn:hover{background:rgba(63,185,80,.2);}
+  .view-btn.active{background:rgba(63,185,80,.2);border-color:var(--accent2);}
+  pre{background:var(--code-bg);padding:16px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.75;tab-size:2;scrollbar-width:thin;scrollbar-color:var(--panel-border) transparent;white-space:pre;}
+  pre::-webkit-scrollbar{height:4px;}
+  pre::-webkit-scrollbar-thumb{background:var(--panel-border);}
+  .kw{color:var(--keyword);font-weight:500;}.fn{color:var(--func);}.str{color:var(--string);}
+  .cm{color:var(--comment);font-style:italic;}.nm{color:var(--number);}.op{color:var(--operator);}
+  .var{color:#ffa657;}.pkg{color:var(--accent2);font-weight:500;}
+
+  /* OUTPUT PANEL */
+  .out-panel{display:none;padding:20px;background:var(--bg);border-bottom:1px solid var(--panel-border);animation:fadeIn .2s ease;}
+  .out-panel.visible{display:block;}
+  .out-img-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:10px;}
+  .out-img{max-width:100%;max-height:520px;object-fit:contain;border-radius:8px;border:1px solid var(--panel-border);background:var(--panel-bg);display:block;}
+  .out-img-missing{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed var(--panel-border);border-radius:10px;padding:28px 20px;background:var(--panel-bg);max-width:400px;pointer-events:none;}
+  .out-img-missing-icon{font-size:1.8rem;opacity:.4;}
+  .out-img-missing-label{font-size:.78rem;color:var(--text-muted);text-align:center;}
+  .out-img-missing-hint{font-size:.68rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+  .out-img-path{font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--text-dim);background:var(--code-bg);border:1px solid var(--code-border);padding:3px 10px;border-radius:4px;margin-top:2px;}
+
+  /* SECTION PREV/NEXT NAV */
+  .section-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:56px;padding-top:24px;border-top:1px solid var(--panel-border);}
+  .sec-nav-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:.8rem;font-weight:600;font-family:'Sora',sans-serif;border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--text-muted);cursor:pointer;transition:all .18s;text-decoration:none;letter-spacing:.01em;}
+  .sec-nav-btn:hover{background:var(--hover);border-color:var(--accent2);color:var(--text);}
+  .sec-nav-btn.prev svg{margin-right:2px;}
+  .sec-nav-btn.next svg{margin-left:2px;}
+  .sec-nav-btn:disabled,.sec-nav-btn[disabled]{opacity:.3;pointer-events:none;}
+  .sec-nav-label{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
+  .sec-nav-btn.next .sec-nav-label{align-items:flex-end;}
+  .sec-nav-dir{font-size:.62rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);}
+  .sec-nav-name{font-size:.8rem;font-weight:600;color:var(--text);}
+  .sec-nav-center{font-size:.72rem;color:var(--text-dim);letter-spacing:.04em;text-align:center;}
+
+  /* CALLOUT */
+  .callout{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);border-left:3px solid var(--accent);border-radius:6px;padding:14px 18px;margin:16px 0;font-size:.84rem;color:var(--text-muted);line-height:1.65;}
+  .callout.green{background:rgba(63,185,80,.06);border-color:rgba(63,185,80,.2);border-left-color:var(--accent2);}
+  .callout.orange{background:rgba(247,178,102,.06);border-color:rgba(247,178,102,.2);border-left-color:#f0a500;}
+  .callout-title{font-weight:600;color:var(--text);margin-bottom:4px;font-size:.8rem;}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;margin:14px 0;border-radius:8px;border:1px solid var(--panel-border);}
+  table{width:100%;border-collapse:collapse;font-size:.78rem;}
+  th{background:var(--th-bg);color:var(--text-muted);font-weight:600;padding:9px 14px;text-align:left;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--panel-border);}
+  td{padding:8px 14px;border-bottom:1px solid var(--panel-border);color:var(--text-muted);vertical-align:top;line-height:1.5;}
+  td:first-child{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.76rem;}
+  tr:last-child td{border-bottom:none;}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    aside{transform:translateX(-100%);}
+    aside.open{transform:translateX(0);}
+    main{margin-left:0;padding:24px 16px 60px;max-width:100%;}
+    .hamburger{display:flex;}
+    .overlay.open{display:block;}
+    .search-box{display:none;}
+    h1{font-size:1.3rem;}
+    .lab-hero{padding:24px;}
+    .lab-hero::before{display:none;}
+    .page-nav{display:none;}
+    pre{font-size:.72rem;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+  </button>
+  <div class="logo"><div class="logo-icon">R</div>Concepts of R</div>
+  <span class="header-badge">Lab</span>
+  <div class="header-right">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search labs…" oninput="searchLab(this.value)"/>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+      <span id="themeIcon">☀️</span><span id="themeLabel">Light</span>
+    </button>
+    <nav class="page-nav">
+      <a class="nav-link" href="index.html">🏠 Home</a>
+      <a class="nav-link" href="theory.html">📘 Theory</a>
+      <a class="nav-link active" href="lab.html">🧪 Lab</a>
+    </nav>
+  </div>
+</header>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-chapter open" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>Overview</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics open">
+      <div class="sidebar-topic active" onclick="showSection('home',this)"><span class="topic-icon">◉</span> Lab Home</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>A — Tabular Data</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('csv',this)"><span class="topic-icon">◎</span> CSV File Operations</div>
+      <div class="sidebar-topic" onclick="showSection('tablemani',this)"><span class="topic-icon">◎</span> Table Manipulation</div>
+      <div class="sidebar-topic" onclick="showSection('attrtable',this)"><span class="topic-icon">◎</span> Attribute Table (Spatial)</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>B — Vector Data</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('vector',this)"><span class="topic-icon">◎</span> Shapefiles, GeoJSON, KMZ</div>
+      <div class="sidebar-topic" onclick="showSection('simplequery',this)"><span class="topic-icon">◎</span> Simple Query</div>
+      <div class="sidebar-topic" onclick="showSection('multiquery',this)"><span class="topic-icon">◎</span> Multiple Query</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>C — Raster Data</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('raster',this)"><span class="topic-icon">◎</span> JPG, TIF &amp; DEM</div>
+      <div class="sidebar-topic" onclick="showSection('dip',this)"><span class="topic-icon">◎</span> Digital Image Processing</div>
+      <div class="sidebar-topic" onclick="showSection('indices',this)"><span class="topic-icon">◎</span> NDVI &amp; NDWI</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>D — Geo Processing</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('dissolve',this)"><span class="topic-icon">◎</span> Dissolve</div>
+      <div class="sidebar-topic" onclick="showSection('buffer',this)"><span class="topic-icon">◎</span> Buffer</div>
+      <div class="sidebar-topic" onclick="showSection('intersection',this)"><span class="topic-icon">◎</span> Intersection</div>
+      <div class="sidebar-topic" onclick="showSection('clip',this)"><span class="topic-icon">◎</span> Clip</div>
+      <div class="sidebar-topic" onclick="showSection('merge',this)"><span class="topic-icon">◎</span> Merge</div>
+      <div class="sidebar-topic" onclick="showSection('union',this)"><span class="topic-icon">◎</span> Union</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>📘 Theory</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="window.location='theory.html'"><span class="topic-icon">◉</span> Go to Theory →</div>
+    </div>
+  </div>
+</aside>
+
+<main>
+
+<!-- HOME -->
+<div class="content-section active" id="sec-home">
+  <div class="lab-hero">
+    <div class="section-tag">🧪 Lab Exercises</div>
+    <h1>GIS with R — Lab</h1>
+    <p class="subtitle">Hands-on practical exercises for GIS data processing, spatial analysis, and visualization using R. All codes follow the exact structure from the lab guide. Click ▶ View Output on any exercise to upload your output screenshot.</p>
+  </div>
+  <div class="callout green">
+    <div class="callout-title">📌 How to Use</div>
+    Click any lab section in the sidebar, expand exercise cards, then click <strong>▶ View Output</strong> to see the output image. Place your JPEG screenshots in an <code>images/</code> folder next to this file, named exactly as shown (e.g. <code>images/ex-csv-read.jpeg</code>). Use ◀ Prev / Next ▶ buttons at the bottom to navigate between sections.
+  </div>
+  <h2 style="margin-top:24px">Lab Sections</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;">
+    <div onclick="showSection('csv',null)" style="background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--panel-border)'">
+      <div style="font-size:1.4rem;margin-bottom:8px">📊</div>
+      <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px">CSV &amp; Tabular</div>
+      <div style="font-size:.75rem;color:var(--text-muted)">Read, plot, and summarize CSV data</div>
+    </div>
+    <div onclick="showSection('vector',null)" style="background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--panel-border)'">
+      <div style="font-size:1.4rem;margin-bottom:8px">🗺️</div>
+      <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px">Vector Data</div>
+      <div style="font-size:.75rem;color:var(--text-muted)">Shapefiles, GeoJSON, KMZ, roads</div>
+    </div>
+    <div onclick="showSection('raster',null)" style="background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--panel-border)'">
+      <div style="font-size:1.4rem;margin-bottom:8px">🛰️</div>
+      <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px">Raster Data</div>
+      <div style="font-size:.75rem;color:var(--text-muted)">JPG, TIF, DEM, satellite imagery</div>
+    </div>
+    <div onclick="showSection('dip',null)" style="background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--panel-border)'">
+      <div style="font-size:1.4rem;margin-bottom:8px">🖼️</div>
+      <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px">Digital Image Processing</div>
+      <div style="font-size:.75rem;color:var(--text-muted)">Landsat bands, composites, filters</div>
+    </div>
+    <div onclick="showSection('indices',null)" style="background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--panel-border)'">
+      <div style="font-size:1.4rem;margin-bottom:8px">🌿</div>
+      <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px">NDVI &amp; NDWI</div>
+      <div style="font-size:.75rem;color:var(--text-muted)">Vegetation and water indices</div>
+    </div>
+    <div onclick="showSection('dissolve',null)" style="background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--panel-border)'">
+      <div style="font-size:1.4rem;margin-bottom:8px">⚙️</div>
+      <div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px">Geo Processing</div>
+      <div style="font-size:.75rem;color:var(--text-muted)">Dissolve, Buffer, Clip, Merge, Union</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- A1 — CSV FILE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-csv">
+  <div class="section-tag">A — Tabular Data</div>
+  <h1>Working with Tabular Data (Non-Spatial)</h1>
+  <p class="subtitle">Reading, printing, summarizing, and visualizing CSV data using base R and ggplot2.</p>
+
+  <h2>1. CSV File — Read, Print &amp; Summarize</h2>
+  <div id="ex-csv-read"></div>
+
+  <h2>2. Plotting CSV Data</h2>
+  <h3>a) Box Plot</h3>
+  <div id="ex-csv-box"></div>
+  <h3>b) Scatter Plot</h3>
+  <div id="ex-csv-scatter"></div>
+  <h3>c) Histogram</h3>
+  <div id="ex-csv-hist"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- A2 — TABLE MANIPULATION -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-tablemani">
+  <div class="section-tag">A — Tabular Data</div>
+  <h1>Data Manipulation (Non-Spatial)</h1>
+  <p class="subtitle">Creating tables, filtering, analyzing, and visualizing non-spatial tabular data with dplyr and ggplot2.</p>
+
+  <h2>1. Creating a Table</h2>
+  <div id="ex-tab-create"></div>
+
+  <h2>2. Manipulating Data</h2>
+  <div id="ex-tab-manip"></div>
+
+  <h2>3. Performing Analysis</h2>
+  <div id="ex-tab-analysis"></div>
+
+  <h2>4. Visualizing the Data (Bar Chart)</h2>
+  <div id="ex-tab-viz"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- A3 — ATTRIBUTE TABLE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-attrtable">
+  <div class="section-tag">A — Tabular Data</div>
+  <h1>Working with Attribute Table of Spatial Data</h1>
+  <p class="subtitle">Loading shapefiles, reading and editing attribute tables, adding/deleting columns, and saving updated shapefiles.</p>
+
+  <h2>1. Loading Shapefile &amp; Reading Attribute Table</h2>
+  <div id="ex-attr-read"></div>
+
+  <h2>2. Plotting Map with Area-Wise Data</h2>
+  <div id="ex-attr-areaplot"></div>
+
+  <h2>3. Adding a New Column (state)</h2>
+  <div id="ex-attr-addcol"></div>
+
+  <h2>4. Adding a Column with a Single Value (population)</h2>
+  <div id="ex-attr-singleval"></div>
+
+  <h2>5. Assigning Unique Values to Population Column</h2>
+  <div id="ex-attr-uniquevals"></div>
+
+  <div class="callout orange">
+    <div class="callout-title">⚠️ Note</div>
+    In Step 4, we added a <em>population</em> column with a single value. To proceed with Step 5 (assigning unique values), you must first delete the population column using Step 6 below.
+  </div>
+
+  <h2>6. Deleting a Column</h2>
+  <div id="ex-attr-delcol"></div>
+
+  <h2>7. Modifying a Single Row</h2>
+  <div id="ex-attr-singlerow"></div>
+
+  <h2>8. Modifying Multiple Rows</h2>
+  <div id="ex-attr-multirow"></div>
+
+  <h2>9. Save the Updated Shapefile</h2>
+  <div id="ex-attr-save"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- B — VECTOR DATA -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-vector">
+  <div class="section-tag">B — Vector Data</div>
+  <h1>Working with Spatial Data (Vector Format)</h1>
+  <p class="subtitle">Loading and plotting shapefiles, GeoJSON, KMZ, points, roads, and DXF files using the sf package.</p>
+
+  <h2>1. Reading Shapefile</h2>
+  <div id="ex-vec-shp"></div>
+
+  <h2>2. Loading &amp; Plotting GeoJSON</h2>
+  <div id="ex-vec-geojson"></div>
+
+  <h2>3. Loading &amp; Plotting Points Data</h2>
+  <div id="ex-vec-points"></div>
+
+  <h2>4. Plotting Points Data on Shapefile</h2>
+  <div id="ex-vec-pts-on-shp"></div>
+
+  <h2>5. Loading &amp; Plotting KMZ File</h2>
+  <div id="ex-vec-kmz"></div>
+
+  <h2>6. Loading &amp; Plotting Road Data</h2>
+  <div id="ex-vec-road"></div>
+
+  <h2>7. Plotting Road on Shapefile</h2>
+  <div id="ex-vec-road-shp"></div>
+
+  <h2>8. Loading &amp; Plotting DXF File</h2>
+  <div id="ex-vec-dxf"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- B — SIMPLE QUERY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-simplequery">
+  <div class="section-tag">B — Vector Data</div>
+  <h1>Simple Query</h1>
+  <p class="subtitle">Selecting and filtering districts by name or attribute using dplyr and ggplot2.</p>
+
+  <h2>1. Selection</h2>
+  <h3>a) Selection of Single District</h3>
+  <div id="ex-sel-single"></div>
+  <h3>b) Displaying Selected District on Entire Map</h3>
+  <div id="ex-sel-single-map"></div>
+  <h3>c) Selection of Multiple Districts</h3>
+  <div id="ex-sel-multi"></div>
+  <h3>d) Displaying Multiple Districts on Entire Map</h3>
+  <div id="ex-sel-multi-map"></div>
+
+  <h2>2. Filtering</h2>
+  <h3>a) Filtering Districts with Area &gt; 5000 sq km</h3>
+  <div id="ex-filt-large"></div>
+  <h3>b) Plotting Districts &gt; 5000 sq km (Standalone)</h3>
+  <div id="ex-filt-large-alone"></div>
+  <h3>c) Plotting Districts &gt; 5000 sq km on Entire Map</h3>
+  <div id="ex-filt-large-map"></div>
+  <h3>d) Filtering Districts with Area &lt; 2000 sq km</h3>
+  <div id="ex-filt-small"></div>
+  <h3>e) Plotting Districts &lt; 2000 sq km (Standalone)</h3>
+  <div id="ex-filt-small-alone"></div>
+  <h3>f) Plotting Districts &lt; 2000 sq km on Entire Map</h3>
+  <div id="ex-filt-small-map"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- B — MULTIPLE QUERY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-multiquery">
+  <div class="section-tag">B — Vector Data</div>
+  <h1>Multiple Query</h1>
+  <p class="subtitle">Displaying multiple layers, spatial relationships, buffers, and multi-layer analysis using terra.</p>
+
+  <h2>1. Displaying Road Data on Shapefile</h2>
+  <div id="ex-mq-road"></div>
+
+  <h2>2. Displaying Road &amp; Temples on Shapefile</h2>
+  <div id="ex-mq-road-temples"></div>
+
+  <h2>3. Displaying Districts Intersecting the Road</h2>
+  <div id="ex-mq-intersect"></div>
+
+  <h2>4. Giving Buffer to the Road (10 km)</h2>
+  <div id="ex-mq-buffer"></div>
+
+  <h2>5a. Temples within 20 km of Road</h2>
+  <div id="ex-mq-t20"></div>
+
+  <h2>5b. Temples within 10 km of Road</h2>
+  <div id="ex-mq-t10"></div>
+
+  <h2>6. Temples Located &gt; 10 km from Road</h2>
+  <div id="ex-mq-after10"></div>
+
+  <h2>7. Adding Multiple Layers (Districts + Mandals + Roads)</h2>
+  <div id="ex-mq-multilayer"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- C — RASTER DATA -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-raster">
+  <div class="section-tag">C — Raster Data</div>
+  <h1>Working with Raster Data</h1>
+  <p class="subtitle">Loading and plotting JPG, TIF, DEM, satellite images, and overlaying vector data on rasters.</p>
+
+  <h2>1. Loading &amp; Plotting JPG File</h2>
+  <div id="ex-ras-jpg"></div>
+
+  <h2>1a. Plotting JPG (Alternative)</h2>
+  <div id="ex-ras-jpg2"></div>
+
+  <h2>2. Loading &amp; Plotting TIF File</h2>
+  <div id="ex-ras-tif"></div>
+
+  <h2>3. Satellite Map — RGB Composite 1</h2>
+  <div id="ex-ras-sat1"></div>
+
+  <h2>4. Satellite Map — RGB Composite 2</h2>
+  <div id="ex-ras-sat2"></div>
+
+  <h2>5. Loading DEM File</h2>
+  <div id="ex-ras-dem"></div>
+
+  <h2>6. DEM with Hillshade Effect (3D)</h2>
+  <div id="ex-ras-dem3d"></div>
+
+  <h2>7. Loading Shapefile on Raster</h2>
+  <div id="ex-ras-vec-overlay"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- C — DIGITAL IMAGE PROCESSING -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-dip">
+  <div class="section-tag">C — Raster Data</div>
+  <h1>Digital Image Processing</h1>
+  <p class="subtitle">Landsat single band, multi-band, composite, enhancement, overlay, and cropping operations.</p>
+
+  <h2>1. Single Band Display</h2>
+  <div id="ex-dip-single"></div>
+
+  <h2>2. Multiple Bands Display</h2>
+  <div id="ex-dip-multi"></div>
+
+  <h2>3. Composite Bands (True Color)</h2>
+  <div id="ex-dip-composite"></div>
+
+  <h2>4. Enhancement — Linear Stretch</h2>
+  <div id="ex-dip-linstretch"></div>
+
+  <h2>5. Enhancement — Histogram Equalization</h2>
+  <div id="ex-dip-histeq"></div>
+
+  <h2>6. Overlay of Vector on Raster</h2>
+  <div id="ex-dip-overlay"></div>
+
+  <h2>7. Subset / Crop (All Districts)</h2>
+  <div id="ex-dip-crop"></div>
+
+  <h2>8. Subset / Crop (Single District — Mulugu)</h2>
+  <div id="ex-dip-crop-single"></div>
+
+  <h2>9. Enhancement — HPF (High Pass Filter / Sharpening)</h2>
+  <div id="ex-dip-hpf"></div>
+
+  <h2>10. Enhancement — LPF (Low Pass Filter / Smoothing)</h2>
+  <div id="ex-dip-lpf"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- C — NDVI & NDWI -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-indices">
+  <div class="section-tag">C — Raster Data</div>
+  <h1>NDVI &amp; NDWI</h1>
+  <p class="subtitle">Calculating and classifying Normalized Difference Vegetation Index and Normalized Difference Water Index from Landsat data.</p>
+
+  <h2>NDVI Preparation</h2>
+  <div id="ex-ndvi-calc"></div>
+
+  <h2>NDVI Classification</h2>
+  <div id="ex-ndvi-class"></div>
+
+  <h2>NDVI Area Calculation per Class</h2>
+  <div id="ex-ndvi-area"></div>
+
+  <h2>NDWI Preparation</h2>
+  <div id="ex-ndwi-calc"></div>
+
+  <h2>NDWI Classification</h2>
+  <div id="ex-ndwi-class"></div>
+
+  <h2>NDWI Area Calculation per Class</h2>
+  <div id="ex-ndwi-area"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- D — DISSOLVE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-dissolve">
+  <div class="section-tag">D — Geo Processing</div>
+  <h1>Dissolve</h1>
+  <p class="subtitle">Dissolving village boundaries into mandal boundaries using group_by and st_union.</p>
+
+  <h2>1. Displaying Villages Shapefile</h2>
+  <div id="ex-dis-villages"></div>
+
+  <h2>2. Dissolving Villages to Mandals</h2>
+  <div id="ex-dis-dissolve"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- D — BUFFER -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-buffer">
+  <div class="section-tag">D — Geo Processing</div>
+  <h1>Buffer</h1>
+  <p class="subtitle">Creating buffers around polygon and polyline features using st_buffer.</p>
+
+  <h2>1. Buffer for Polygon Feature (Multiple Mandals — 2 km)</h2>
+  <div id="ex-buf-polygon"></div>
+
+  <h2>2. Buffer for Polyline Feature (Canal — 2 km)</h2>
+  <div id="ex-buf-polyline"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- D — INTERSECTION -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-intersection">
+  <div class="section-tag">D — Geo Processing</div>
+  <h1>Intersection</h1>
+  <p class="subtitle">Intersecting canal buffer with mandals and villages layers to find overlapping areas.</p>
+
+  <h2>1. Canal Buffer Intersecting Mandals</h2>
+  <div id="ex-int-mandals"></div>
+
+  <h2>2. Canal Buffer Intersecting Villages</h2>
+  <div id="ex-int-villages"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- D — CLIP -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-clip">
+  <div class="section-tag">D — Geo Processing</div>
+  <h1>Clip</h1>
+  <p class="subtitle">Clipping revenue villages from the villages shapefile for specific mandals.</p>
+
+  <h2>1. Clipping Utnoor Mandal</h2>
+  <div id="ex-clip-utnoor"></div>
+
+  <h2>2. Clipping Narnoor Mandal</h2>
+  <div id="ex-clip-narnoor"></div>
+
+  <h2>3. Clipping Gadiguda Mandal</h2>
+  <div id="ex-clip-gadiguda"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- D — MERGE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-merge">
+  <div class="section-tag">D — Geo Processing</div>
+  <h1>Merge</h1>
+  <p class="subtitle">Merging revenue villages clipped from the villages shapefile into a single combined layer.</p>
+
+  <h2>Merging Narnoor, Utnoor &amp; Gadiguda</h2>
+  <div id="ex-merge"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- D — UNION -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="content-section" id="sec-union">
+  <div class="section-tag">D — Geo Processing</div>
+  <h1>Union</h1>
+  <p class="subtitle">Combining revenue villages and canal intersect layers into a single unified geometry.</p>
+
+  <h2>Union of Revenue Villages &amp; Canal Intersect</h2>
+  <div id="ex-union"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ─── THEME ─── */
+function toggleTheme() {
+  var isLight = document.documentElement.classList.toggle('light');
+  document.getElementById('themeIcon').textContent  = isLight ? '🌙' : '☀️';
+  document.getElementById('themeLabel').textContent = isLight ? 'Dark' : 'Light';
+  try { localStorage.setItem('rTheme', isLight ? 'light' : 'dark'); } catch(e){}
+}
+(function() {
+  try {
+    if (localStorage.getItem('rTheme') === 'light') {
+      document.documentElement.classList.add('light');
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('themeIcon').textContent  = '🌙';
+        document.getElementById('themeLabel').textContent = 'Dark';
+      });
+    }
+  } catch(e) {}
+})();
+
+/* ─── SIDEBAR ─── */
+function toggleChapter(el) {
+  var t = el.nextElementSibling, o = t.classList.contains('open');
+  el.classList.toggle('open', !o); t.classList.toggle('open', !o);
+}
+function showSection(id, topicEl) {
+  document.querySelectorAll('.content-section').forEach(function(s){ s.classList.remove('active'); });
+  var target = document.getElementById('sec-' + id);
+  if (target) target.classList.add('active');
+  document.querySelectorAll('.sidebar-topic').forEach(function(t){ t.classList.remove('active'); });
+  if (topicEl) {
+    topicEl.classList.add('active');
+    topicEl.parentElement.classList.add('open');
+    topicEl.parentElement.previousElementSibling.classList.add('open');
+  } else {
+    document.querySelectorAll('.sidebar-topic').forEach(function(t) {
+      if (t.getAttribute('onclick') && t.getAttribute('onclick').indexOf("'" + id + "'") !== -1) {
+        t.classList.add('active');
+        t.parentElement.classList.add('open');
+        t.parentElement.previousElementSibling.classList.add('open');
+      }
+    });
+  }
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  window.scrollTo(0, 0);
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+/* ─── COPY CODE ─── */
+function copyCode(btn) {
+  var pre = btn.closest('.ex-card').querySelector('pre');
+  if (!pre) pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(function() {
+    btn.classList.add('copied'); btn.textContent = '✓ Copied';
+    setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = '⎘ Copy'; }, 2000);
+  });
+}
+
+/* ─── OUTPUT TOGGLE ─── */
+function toggleOut(id, btn) {
+  var panel = document.getElementById('out-' + id);
+  var vis = panel.classList.contains('visible');
+  panel.classList.toggle('visible', !vis);
+  btn.classList.toggle('active', !vis);
+  btn.innerHTML = vis ? '&#9654; View Output' : '&#9660; Hide Output';
+}
+
+/* ─── EXERCISE BUILDER ─── */
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function ex(containerId, num, title, code) {
+  var id = containerId.replace(/[^a-z0-9]/gi,'_');
+  var imgSrc = '' + containerId + '.jpeg';
+  var html = '<div class="ex-card" id="card-' + id + '">'
+    + '<div class="ex-header" onclick="toggleCard(\'' + id + '\')">'
+      + '<span class="ex-num">' + num + '</span>'
+      + '<span class="ex-title">' + title + '</span>'
+      + '<svg class="ex-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>'
+    + '</div>'
+    + '<div class="ex-body">'
+      + '<div class="code-block">'
+        + '<div class="console-header">'
+          + '<div class="console-dots"><span></span><span></span><span></span></div>'
+          + '<span class="console-lang">R Script</span>'
+          + '<div class="console-actions">'
+            + '<button class="view-btn" onclick="toggleOut(\'' + id + '\',this)">&#9654; View Output</button>'
+            + '<button class="console-copy" onclick="copyCode(this)">&#x2398; Copy</button>'
+          + '</div>'
+        + '</div>'
+        + '<pre>' + esc(code) + '</pre>'
+      + '</div>'
+      + '<div class="out-panel" id="out-' + id + '">'
+        + '<div class="out-img-wrap">'
+          + '<img class="out-img" src="' + imgSrc + '" alt="Output: ' + title + '" '
+            + 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+          + '<div class="out-img-missing" style="display:none">'
+            + '<div class="out-img-missing-icon">🖼️</div>'
+            + '<div class="out-img-missing-label">Output image not found</div>'
+            + '<div class="out-img-missing-hint">images/' + containerId + '.jpeg</div>'
+          + '</div>'
+          + '<div class="out-img-path">📁 images/' + containerId + '.jpeg</div>'
+        + '</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+  var c = document.getElementById(containerId);
+  if (c) c.innerHTML = html;
+}
+
+function toggleCard(id) {
+  document.getElementById('card-' + id).classList.toggle('open');
+}
+
+/* ─── SEARCH ─── */
+function searchLab(q) {
+  if (!q) return;
+  q = q.toLowerCase();
+  var map = {
+    'csv':['csv','student','boxplot','scatter','histogram','read.csv'],
+    'tablemani':['table','dplyr','filter','mutate','salary','department'],
+    'attrtable':['attribute','district','column','population','st_write'],
+    'vector':['shapefile','geojson','kmz','kml','points','road','dxf','st_read'],
+    'simplequery':['selection','filter','area','adilabad','district'],
+    'multiquery':['buffer','intersect','temple','road','nh44','multilayer'],
+    'raster':['raster','jpg','tif','dem','satellite','rast'],
+    'dip':['landsat','band','composite','stretch','hpf','lpf','plotrgb'],
+    'indices':['ndvi','ndwi','classify','vegetation','water'],
+    'dissolve':['dissolve','mandal','st_union','group_by'],
+    'buffer':['buffer','st_buffer','canal','utnoor'],
+    'intersection':['intersection','st_intersection','canal_buffer'],
+    'clip':['clip','utnoor','narnoor','gadiguda'],
+    'merge':['merge','bind_rows','narnoor','utnoor'],
+    'union':['union','rbind','revenue','canal_intersect']
+  };
+  for (var id in map) {
+    var kws = map[id];
+    for (var i=0;i<kws.length;i++) {
+      if (kws[i].indexOf(q) !== -1 || q.indexOf(kws[i]) !== -1) {
+        showSection(id, null); return;
+      }
+    }
+  }
+}
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') searchLab(this.value);
+});
+
+/* ════════════════════════════════════════════════
+   ALL EXERCISE DEFINITIONS — exact word-doc order
+   ════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+
+/* ── A1: CSV ── */
+ex('ex-csv-read','1','Reading CSV File — Print &amp; Summarize',
+`# Read the CSV file
+data <- read.csv("student.csv")
+
+# Print the entire dataset
+print(data)
+
+# Print just the first 6 rows
+head(data)
+
+# Print a summary of the dataset (gives mean, median, min, max for each column)
+summary(data)`);
+
+ex('ex-csv-box','2','Box Plot — Distribution of Scores',
+`# Create a boxplot for the subject score columns (columns 3 to 6)
+boxplot(data[, c("GIS", "DIP", "RS", "R.Pro")],
+        main = "Distribution of Scores by Subject",
+        ylab = "Scores",
+        xlab = "Subjects",
+        col  = c("skyblue", "lightgreen", "salmon", "plum"))`);
+
+ex('ex-csv-scatter','3','Scatter Plot — Scatterplot Matrix',
+`# Create a pairs plot for the 4 subjects
+pairs(data[, c("GIS", "DIP", "RS", "R.Pro")],
+      main        = "Scatterplot Matrix of Subject Scores",
+      pch         = 19,
+      col         = "darkblue",
+      lower.panel = NULL)`);
+
+ex('ex-csv-hist','4','Histogram — 2×2 Grid',
+`# Set up the plotting area to have 2 rows and 2 columns
+par(mfrow = c(2, 2))
+
+# Plot the 4 histograms
+hist(data$GIS,   main="GIS Scores",   xlab="Score", col="skyblue")
+hist(data$DIP,   main="DIP Scores",   xlab="Score", col="lightgreen")
+hist(data$RS,    main="RS Scores",    xlab="Score", col="salmon")
+hist(data$R.Pro, main="R-Pro Scores", xlab="Score", col="plum")
+
+# Reset the plotting area back to normal
+par(mfrow = c(1, 1))`);
+
+/* ── A2: TABLE MANIPULATION ── */
+ex('ex-tab-create','1','Creating a Table with dplyr',
+`library(dplyr)
+
+data <- data.frame(
+  ID               = 1:6,
+  Name             = c("Alice","Bob","Charlie","Diana","Evan","Fiona"),
+  Department       = c("Sales","IT","Sales","HR","IT","HR"),
+  Salary           = c(60000,75000,52000,62000,80000,58000),
+  Years_Experience = c(3,5,2,4,6,2)
+)
+
+print(data)`);
+
+ex('ex-tab-manip','2','Manipulating Data — Filter &amp; Mutate',
+`# Give everyone in IT a 10% raise, and only look at their names and new salaries
+promotions <- data %>%
+  filter(Department == "IT") %>%          # Keep only IT staff
+  mutate(New_Salary = Salary * 1.10) %>%  # Calculate a 10% raise
+  select(Name, Department, New_Salary)
+
+print(promotions)`);
+
+ex('ex-tab-analysis','3','Performing Analysis — group_by &amp; summarise',
+`# Calculate the average salary and total headcount for each department
+analysis <- data %>%
+  group_by(Department) %>%
+  summarise(
+    Avg_Salary     = mean(Salary),
+    Min_Experience = min(Years_Experience),
+    Headcount      = n()           # n() counts the number of rows
+  ) %>%
+  arrange(desc(Avg_Salary))
+
+print(analysis)`);
+
+ex('ex-tab-viz','4','Visualizing Data — Bar Chart with ggplot2',
+`library(ggplot2)
+
+# Create a bar chart from the summarized 'analysis' table
+ggplot(analysis, aes(x = Department, y = Avg_Salary, fill = Department)) +
+  geom_col(color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Average Salary by Department",
+    x     = "Department",
+    y     = "Average Salary ($)"
+  ) +
+  scale_fill_brewer(palette = "Pastel1")`);
+
+/* ── A3: ATTRIBUTE TABLE ── */
+ex('ex-attr-read','1','Loading Shapefile &amp; Reading Attribute Table',
+`library(sf)
+
+dist_data <- st_read("TS_DISTRICTS_UTM.shp")
+print(dist_data)
+
+# Displays layer information and attributes for First 10 values
+districts <- as.data.frame(dist_data)
+print(districts)
+
+# This will show all District names, area, and the geometry string.
+plot(dist_data)`);
+
+ex('ex-attr-areaplot','2','Plotting Map with Area-Wise Gradient Colors',
+`# Plotting of area wise gradient colors
+library(sf)
+
+plot(dist_data["area"], main = "District Area Gradient", key.pos = 4)`);
+
+ex('ex-attr-addcol','3','Adding a New Column (state)',
+`# Add a new column named 'state' and set all rows to 'Telangana'
+dist_data$state <- "Telangana"
+
+print(dist_data)`);
+
+ex('ex-attr-singleval','4','Adding a Column with a Single Value',
+`# Assign the same population value to every district
+dist_data$population <- 10000
+
+# Verify the change
+head(dist_data)`);
+
+ex('ex-attr-uniquevals','5','Assigning Unique Values to Population Column',
+`# Create a list of 33 numbers
+population_data <- c(708972,515812,824504,609990,1005711,6731790,
+  2445000,585475,1132666,1042742,1634819,1069261,718537,493333,
+  1077393,931525,1012065,1087424,1588810,568400,1041213,
+  1096338,1318282,928674,1396638,1028330,1031732,822615,
+  702277,1101218,2440073,529643,566117)
+
+# This creates a new numeric column called 'population'
+dist_data$population <- population_data
+
+print(dist_data)`);
+
+ex('ex-attr-delcol','6','Deleting a Column',
+`library(dplyr)
+
+# Remove the 'population' field using select
+dist_data <- dist_data %>% select(-population)
+
+print(dist_data)`);
+
+ex('ex-attr-singlerow','7','Modifying a Single Row',
+`dist_data$population[dist_data$District == "Mulugu"] <- 5000
+
+df_view <- as.data.frame(dist_data)
+print(df_view[, c("District","population","state")], max = 1000)`);
+
+ex('ex-attr-multirow','8','Modifying Multiple Rows',
+`library(dplyr)
+
+dist_data <- dist_data %>%
+  mutate(population = case_when(
+    District == "Nirmal"    ~ 5000,
+    District == "Nizamabad" ~ 6000,
+    District == "Adilabad"  ~ 7000,
+    TRUE                    ~ population
+  ))
+
+print(dist_data)`);
+
+ex('ex-attr-save','9','Save the Updated Shapefile',
+`# Save the updated shapefile with its attribute table
+st_write(dist_data, "TS_DISTRICTS_WITH_STATE.shp")`);
+
+/* ── B: VECTOR DATA ── */
+ex('ex-vec-shp','1','Reading &amp; Plotting Shapefile',
+`library(sf)
+
+data <- st_read("TS_DISTRICTS_UTM.shp")
+print(data)
+
+# Plot the geometry (outlines) of the shapefile
+# st_geometry() ensures we only plot the map outlines, not a separate map for every attribute
+plot(st_geometry(data),
+     main   = "Telangana Districts (using sf)",
+     col    = "lightblue",
+     border = "darkblue")`);
+
+ex('ex-vec-geojson','2','Loading &amp; Plotting GeoJSON',
+`library(sf)
+
+# Read the GeoJSON file into an sf object
+data <- st_read("village boundary_ts.geojson")
+print(data)
+
+# Plot the geometry of the villages
+# st_geometry() ensures we only plot the boundaries
+plot(st_geometry(data),
+     main   = "Village Boundaries (Using sf)",
+     col    = "lightyellow",
+     border = "orange")`);
+
+ex('ex-vec-points','3','Loading &amp; Plotting Points Data',
+`library(sf)
+
+data <- read.csv("krm_temples.csv")
+
+# Convert the data frame into an sf spatial object
+# We set crs = 4326, which is the standard coordinate reference system
+# for GPS data (WGS 84).
+temples <- st_as_sf(data,
+                    coords = c("Longitude", "Latitude"),
+                    crs    = 4326)
+print(head(temples))
+
+plot(st_geometry(temples),
+     main = "Temple Locations",
+     pch  = 19,
+     col  = "red",
+     cex  = 1.2)`);
+
+ex('ex-vec-pts-on-shp','4','Plotting Points Data on Shapefile',
+`library(sf)
+
+districts   <- st_read("TS_DISTRICTS_UTM.shp")
+data        <- read.csv("krm_temples.csv")
+temples     <- st_as_sf(data,
+                        coords = c("Longitude", "Latitude"),
+                        crs    = 4326)
+
+# Transform the points to match the CRS of the districts shapefile
+transformed <- st_transform(temples, crs = st_crs(districts))
+
+plot(st_geometry(districts),
+     main   = "Temple on Districts Map",
+     col    = "lightgray",
+     border = "darkgray")
+
+plot(st_geometry(transformed),
+     add = TRUE,
+     pch = 19,
+     col = "red",
+     cex = 1.2)`);
+
+ex('ex-vec-kmz','5','Loading &amp; Plotting KMZ File',
+`library(sf)
+
+kmz_file  <- "ktp1.kmz"
+unzip_kmz <- "unzipped_kmz"
+
+# Unzip the KMZ file (extracts contents, usually a 'doc.kml' file)
+unzip(kmz_file, exdir = unzip_kmz)
+
+# Find the extracted KML file
+kml_file <- list.files(unzip_kmz,
+                       pattern    = "\\.kml$",
+                       full.names = TRUE)[1]
+
+# Read the KML file into a spatial data frame
+spatial_data <- st_read(kml_file)
+print(head(spatial_data))
+
+plot(st_geometry(spatial_data),
+     main   = "KMZ Map Data",
+     col    = "green",
+     border = "darkmagenta",
+     pch    = 19,
+     cex    = 1.2)`);
+
+ex('ex-vec-road','6','Loading &amp; Plotting Road Data',
+`library(sf)
+
+road <- st_read("NH44.shp")
+print(head(road))
+
+plot(st_geometry(road),
+     main = "Road Network",
+     col  = "blue",
+     lwd  = 4)`);
+
+ex('ex-vec-road-shp','7','Plotting Road on Shapefile',
+`library(sf)
+
+districts   <- st_read("TS_DISTRICTS_UTM.shp")
+road        <- st_read("NH44.shp")
+transformed <- st_transform(road, crs = st_crs(districts))
+
+plot(st_geometry(districts),
+     main   = "Road on Districts Map",
+     col    = "lightgray",
+     border = "white")
+
+plot(st_geometry(transformed),
+     add = TRUE,
+     col = "blue",
+     lwd = 3)`);
+
+ex('ex-vec-dxf','8','Loading &amp; Plotting DXF File',
+`library(sf)
+
+dxf_data <- st_read("Thimmapur_dry_221009.dxf")
+print(dxf_data)
+
+plot(st_geometry(dxf_data),
+     main = "Thimmapur Dry CAD Layout",
+     col  = "blue",
+     lwd  = 1)`);
+
+/* ── B: SIMPLE QUERY ── */
+ex('ex-sel-single','1a','Selection of Single District',
+`library(sf); library(dplyr); library(ggplot2)
+
+districts   <- st_read("TS_DISTRICTS_UTM.shp")
+single_dist <- districts %>% filter(District == "Adilabad")
+
+ggplot(data = single_dist) +
+  geom_sf(fill = "orange", color = "black") +
+  geom_sf_text(aes(label = District), vjust = 1.5) +
+  labs(title = "Standalone Map: Adilabad District") +
+  theme_minimal()`);
+
+ex('ex-sel-single-map','1b','Displaying Selected District on Entire Map',
+`# Plot base map first, then the highlighted district on top
+ggplot() +
+  geom_sf(data = districts,   fill = "lightgray", color = "white") +
+  geom_sf(data = single_dist, fill = "orange",    color = "black") +
+  geom_sf_text(data = single_dist, aes(label = District), vjust = 1.5) +
+  labs(title = "Highlighted Map: Adilabad in Telangana") +
+  theme_minimal()`);
+
+ex('ex-sel-multi','1c','Selection of Multiple Districts',
+`multi_dist <- districts %>%
+  filter(District %in% c("Adilabad","Karimnagar","Mulugu"))
+
+ggplot(data = multi_dist) +
+  geom_sf(fill = "skyblue", color = "black") +
+  geom_sf_text(aes(label = District)) +
+  labs(title = "Standalone Map: Selected Districts") +
+  theme_minimal()`);
+
+ex('ex-sel-multi-map','1d','Displaying Multiple Districts on Entire Map',
+`ggplot() +
+  geom_sf(data = districts,  fill = "lightgray", color = "white") +
+  geom_sf(data = multi_dist, fill = "skyblue",   color = "black") +
+  geom_sf_text(data = multi_dist, aes(label = District)) +
+  labs(title = "Highlighted Map: Selected Districts") +
+  theme_minimal()`);
+
+ex('ex-filt-large','2a','Filtering Districts with Area &gt; 5000 sq km',
+`# Filter based on the area column
+large_area_districts <- districts %>% filter(area > 5000)
+
+print(st_drop_geometry(large_area_districts))`);
+
+ex('ex-filt-large-alone','2b','Plotting Districts &gt; 5000 sq km (Standalone)',
+`ggplot(data = large_area_districts) +
+  geom_sf(fill = "lightgreen", color = "black") +
+  geom_sf_text(aes(label = District), size = 3, color = "darkblue") +
+  labs(title = "Standalone: Districts with Area > 5000") +
+  theme_minimal()`);
+
+ex('ex-filt-large-map','2c','Plotting Districts &gt; 5000 sq km on Entire Map',
+`ggplot() +
+  # 1. Base layer (All districts in gray)
+  geom_sf(data = districts, fill = "lightgray", color = "white") +
+  # 2. Highlight layer (Large districts in green)
+  geom_sf(data = large_area_districts, fill = "lightgreen", color = "black") +
+  # 3. Text layer (Labels for the large districts only)
+  geom_sf_text(data = large_area_districts, aes(label = District),
+               size = 3, color = "black") +
+  labs(title = "Highlighted: Districts with Area > 5000") +
+  theme_minimal()`);
+
+ex('ex-filt-small','2d','Filtering Districts with Area &lt; 2000 sq km',
+`small_area_districts <- districts %>% filter(area < 2000)
+
+print(st_drop_geometry(small_area_districts))`);
+
+ex('ex-filt-small-alone','2e','Plotting Districts &lt; 2000 sq km (Standalone)',
+`ggplot(data = small_area_districts) +
+  geom_sf(fill = "pink", color = "black") +
+  geom_sf_text(aes(label = District), size = 3, color = "black") +
+  labs(title = "Standalone: Districts with Area < 2000") +
+  theme_minimal()`);
+
+ex('ex-filt-small-map','2f','Plotting Districts &lt; 2000 sq km on Entire Map',
+`ggplot() +
+  geom_sf(data = districts, fill = "lightgray", color = "white") +
+  geom_sf(data = small_area_districts, fill = "pink", color = "black") +
+  geom_sf_text(data = small_area_districts,
+               aes(label = District), size = 3, color = "black") +
+  labs(title = "Highlighted: Districts with Area < 2000") +
+  theme_minimal()`);
+
+/* ── B: MULTIPLE QUERY ── */
+ex('ex-mq-road','1','Displaying Road Data on Shapefile',
+`library(terra)
+
+districts_vect <- vect("TS_DISTRICTS_UTM.shp")
+road_vect      <- vect("NH44.shp")
+
+# Plot the districts first (bottom layer)
+plot(districts_vect,
+     col  = "lightgray",
+     border = "white",
+     main   = "NH44 Highway through TS Districts",
+     axes   = FALSE)
+
+# Plot the NH44 road on top of the districts
+plot(road_vect, col = "red", lwd = 2.5, add = TRUE)`);
+
+ex('ex-mq-road-temples','2','Displaying Road &amp; Temples on Shapefile',
+`library(terra)
+
+districts_vect <- vect("TS_DISTRICTS_UTM.shp")
+road_vect      <- vect("NH44.shp")
+temples_df     <- read.csv("krm_temples.csv")
+
+# Convert the dataframe to a SpatVector
+# Set which columns hold coordinates and that they are GPS (EPSG:4326)
+temples_vect <- vect(temples_df,
+                     geom = c("Longitude","Latitude"),
+                     crs  = "EPSG:4326")
+
+# Project the temples from GPS to match the UTM districts map
+temples_vect <- project(temples_vect, crs(districts_vect))
+
+plot(districts_vect,
+     col    = "lightgray",
+     border = "white",
+     main   = "NH44 Highway and Temples in TS",
+     axes   = FALSE)
+plot(road_vect,    col = "red",  lwd = 2.5,   add = TRUE)
+plot(temples_vect, col = "blue", pch = 20, cex = 0.8, add = TRUE)`);
+
+ex('ex-mq-intersect','3','Displaying Districts Intersecting the Road',
+`library(terra)
+
+districts <- vect("TS_DISTRICTS_UTM.shp")
+road      <- vect("NH44.shp")
+
+if (crs(districts) != crs(road)) {
+  road <- project(road, districts)
+}
+
+intersects_logic       <- relate(districts, road, "intersects")
+intersecting_idx       <- as.vector(intersects_logic)
+intersecting_districts <- districts[intersecting_idx, ]
+
+plot(districts,              col = "lightgray", border = "white",
+     main = "Districts Intersecting NH44")
+plot(intersecting_districts, col = "red",       border = "white", add = TRUE)
+plot(road,                   col = "yellow",    lwd = 2,          add = TRUE)
+
+print(intersecting_districts$District)`);
+
+ex('ex-mq-buffer','4','Giving Buffer to the Road (10 km)',
+`library(terra)
+
+districts <- vect("TS_DISTRICTS_UTM.shp")
+road      <- vect("NH44.shp")
+
+if (crs(districts) != crs(road)) {
+  road <- project(road, districts)
+}
+
+road_buffer            <- buffer(road, width = 10000)
+intersects_logic       <- relate(districts, road_buffer, "intersects")
+intersecting_idx       <- as.vector(intersects_logic)
+intersecting_districts <- districts[intersecting_idx, ]
+
+plot(districts,              col = "grey90",  border = "white",
+     main = "10km Buffer around NH44")
+plot(intersecting_districts, col = "yellow",  border = "white",  add = TRUE)
+plot(road_buffer,            col = rgb(1,0,0,0.6), border = "green", add = TRUE)
+plot(road,                   col = "black",   lwd = 2,           add = TRUE)
+
+legend("bottomright",
+       legend = c("NH44 Road","10km Buffer Zone","Intersecting Districts"),
+       col    = c("darkred","red","yellow"),
+       lwd    = c(2,1,NA), pch = c(NA,NA,15), pt.cex = 1.5, bg = "white")
+
+print("Districts within 10km of NH44:")
+print(intersecting_districts$District)`);
+
+ex('ex-mq-t20','5a','Temples within 20 km of Road',
+`library(terra)
+
+temples_df   <- read.csv("krm_temples.csv")
+temples_vec  <- vect(temples_df, geom = c("Longitude","Latitude"), crs = "EPSG:4326")
+district     <- vect("TS_DISTRICTS_UTM.shp")
+roads        <- vect("NH44.shp")
+
+temples_utm  <- project(temples_vec, "EPSG:32644")
+roads_utm    <- project(roads,       "EPSG:32644")
+district_utm <- project(district,    "EPSG:32644")
+
+buffer_20km      <- buffer(roads_utm, width = 20000)
+temples_in_20km  <- temples_utm[buffer_20km, ]
+
+plot(district_utm,    col = "white", border = "black", main = "Temples within 20km of Roads")
+plot(buffer_20km,     col = rgb(0,0,1,0.1), border = "blue", add = TRUE)
+plot(roads_utm,       col = "green", lwd = 2,  add = TRUE)
+plot(temples_in_20km, col = "blue",  pch = 16, cex = 0.8, add = TRUE)`);
+
+ex('ex-mq-t10','5b','Temples within 10 km of Road',
+`# (Continuing from previous code block — temples_utm, roads_utm, district_utm already loaded)
+
+buffer_10km     <- buffer(roads_utm, width = 10000)
+temples_in_10km <- temples_utm[buffer_10km, ]
+
+plot(district_utm,    col = "white", border = "black", main = "Temples within 10km of Roads")
+plot(buffer_10km,     col = rgb(1,0,0,0.2), border = "red", add = TRUE)
+plot(roads_utm,       col = "black", lwd = 1.5, add = TRUE)
+plot(temples_in_10km, col = "darkred", pch = 18, cex = 1.2, add = TRUE)`);
+
+ex('ex-mq-after10','6','Temples Located &gt; 10 km from Road',
+`buf_10km           <- aggregate(buffer(roads_utm, width = 10000))
+after_10km         <- !is.related(temples_utm, buf_10km, "intersects")
+temples_after_10km <- temples_utm[after_10km, ]
+
+plot(district_utm,       col = "white",  border = "black",
+     main = "Temples Located AFTER 10km from Road")
+plot(buf_10km,           col = rgb(1,0,0,0.1), border = "red", add = TRUE)
+plot(roads_utm,          col = "black",  lwd = 1.5, add = TRUE)
+plot(temples_after_10km, col = "darkred", pch = 18, cex = 1, add = TRUE)`);
+
+ex('ex-mq-multilayer','7','Adding Multiple Layers — Districts + Mandals + Road Types',
+`library(terra)
+
+mandals_map  <- vect("shapes/TS_mandals_pt.shp")
+roads_network <- vect("shapes/tg-rd.shp")
+districts_map <- vect("TS_DISTRICTS_UTM.shp")
+
+if (crs(roads_network) == "") { crs(roads_network) <- "EPSG:4326" }
+if (crs(districts_map) != crs(mandals_map)) {
+  districts_map <- project(districts_map, crs(mandals_map))
+}
+
+roads_network_proj <- project(roads_network, crs(mandals_map))
+roads_on_mandals   <- crop(roads_network_proj, mandals_map)
+
+nh_roads    <- roads_on_mandals[roads_on_mandals$Type == "NH", ]
+major_roads <- roads_on_mandals[roads_on_mandals$Type == "Major Road", ]
+
+mandal_shape_number <- 16  # 16=circle, 17=triangle, 15=square
+
+plot(mandals_map, col = "blue", pch = mandal_shape_number, cex = 0.7,
+     main = "Telangana: Districts, Mandals, and Road Types")
+plot(districts_map, col = NA,      border = "grey", lwd = 2,  add = TRUE)
+plot(major_roads,   col = "red",                    lwd = 2,  add = TRUE)
+plot(nh_roads,      col = "darkred",                lwd = 5,  add = TRUE)
+
+legend("bottomright",
+       legend = c("National Highway (NH)","Major Road","Mandal Location"),
+       col    = c("darkred","red","blue"),
+       lwd    = c(5,3,NA), pch = c(NA,NA,mandal_shape_number),
+       bg     = "white", title = "Map Legend", cex = 0.8)`);
+
+/* ── C: RASTER DATA ── */
+ex('ex-ras-jpg','1','Loading &amp; Plotting JPG File',
+`library(terra)
+
+raster_jpg <- rast("KOTTAPALLE.jpg")
+print(raster_jpg)
+
+plot(raster_jpg, main = "Raster image")`);
+
+ex('ex-ras-jpg2','1a','Plotting JPG File (Alternative)',
+`library(terra)
+
+raster_jpg <- rast("/content/b1.jpg")
+print(raster_jpg)
+
+plot(raster_jpg, main = "Raster image")`);
+
+ex('ex-ras-tif','2','Loading &amp; Plotting TIF File',
+`library(terra)
+
+raster_tif <- rast("anth_dem_utm.tif")
+print(raster_tif)
+
+plot(raster_tif, main = "GeoTIFF Raster Map")`);
+
+ex('ex-ras-sat1','3','Satellite Map — RGB Composite 1',
+`#install.packages("raster")
+library(raster)
+
+data <- brick("/content/drive/MyDrive/R_Data/ktp-sat_utm.tif")
+
+plotRGB(data, r = 1, g = 2, b = 3, stretch = "lin")`);
+
+ex('ex-ras-sat2','4','Satellite Map — RGB Composite 2',
+`library(raster)
+
+sat_image <- brick("/content/drive/MyDrive/R_Data/57F7.tif")
+
+# Use plotRGB() to display the color image
+# r=1, g=2, b=3 are the default band assignments for most satellite imagery
+plotRGB(sat_image, r = 1, g = 2, b = 3, stretch = "lin")`);
+
+ex('ex-ras-dem','5','Loading DEM File',
+`dem <- rast("/content/BCM_DEM.tif")
+print(dem)
+
+plot(dem, main = "2D Digital Elevation Model")`);
+
+ex('ex-ras-dem3d','6','DEM with Hillshade Effect (3D)',
+`library(rayshader)
+library(sf)
+
+dem        <- rast("/content/BCM_DEM.tif")
+dem[is.na(dem)] <- 0
+dem[dem < -500] <- 0
+
+# Convert the cleaned dem
+el_matrix <- raster_to_matrix(dem)
+
+el_matrix %>%
+  sphere_shade(texture = "desert") %>%
+  add_shadow(ray_shade(el_matrix, zscale = 33), 0.5) %>%
+  plot_3d(el_matrix, zscale = 10, fov = 0,
+          theta = 135, zoom = 0.75, phi = 45)
+
+# Take the snapshot for Colab
+render_snapshot("cleaned_dem.png")
+
+library(IRdisplay)
+display_png(file = "cleaned_dem.png")`);
+
+ex('ex-ras-vec-overlay','7','Loading a Shapefile on Raster',
+`library(raster)
+library(sf)
+
+data      <- brick("ktp-sat_utm.tif")
+dist_data <- st_read("ktp_data.shp")
+
+plotRGB(data, r = 1, g = 2, b = 3, stretch = "lin")
+
+plot(st_geometry(dist_data), add = TRUE, border = "yellow", lwd = 2)`);
+
+/* ── C: DIGITAL IMAGE PROCESSING ── */
+ex('ex-dip-single','1','Display of Landsat Data — Single Band',
+`library(terra)
+
+# Loading single band
+band <- rast("LT05_L1TP_143047_20051110_20200901_02_T1_B1.TIF")
+print(band)
+
+plot(band, col = gray.colors(256))`);
+
+ex('ex-dip-multi','2','Displaying Multiple Bands — Landsat Data',
+`bands <- c(
+  "LT05_L1TP_143047_20051110_20200901_02_T1_B1.TIF",
+  "LT05_L1TP_143047_20051110_20200901_02_T1_B2.TIF",
+  "LT05_L1TP_143047_20051110_20200901_02_T1_B3.TIF",
+  "LT05_L1TP_143047_20051110_20200901_02_T1_B4.TIF"
+)
+
+landsat_data <- rast(bands)
+print(landsat_data)
+
+plot(landsat_data)`);
+
+ex('ex-dip-composite','3','Composite Bands — True Color',
+`names(landsat_data) <- c("Blue","Green","Red","NIR")
+
+plotRGB(landsat_data, r = 3, g = 2, b = 1)
+# plotRGB(landsat_data, r = 4, g = 3, b = 2)`);
+
+ex('ex-dip-linstretch','4','Enhancement — Linear Stretch',
+`plotRGB(landsat_data,
+        r       = 4,
+        g       = 3,
+        b       = 2,
+        stretch = "lin",
+        main    = "False Color Composite")`);
+
+ex('ex-dip-histeq','5','Enhancement — Histogram Equalization',
+`plotRGB(landsat_data,
+        r       = 4,
+        g       = 3,
+        b       = 2,
+        stretch = "hist",
+        main    = "False Color Composite")`);
+
+ex('ex-dip-overlay','6','Overlay of Vector on Raster',
+`library(terra)
+
+landsat_data <- rast("/content/Landsat5_Combined_4Bands.tif")
+districts    <- vect("/content/TS_DISTRICTS_UTM.shp")
+
+plotRGB(landsat_data, r = 4, g = 3, b = 2, stretch = "lin",
+        main = "Landsat data with District Map")
+
+plot(districts, add = TRUE, border = "Yellow", lwd = 3)`);
+
+ex('ex-dip-crop','7','Subset of Image — Crop All Districts',
+`landsat_cropped <- crop(landsat_data, districts)
+landsat_masked  <- mask(landsat_cropped, districts)
+
+plotRGB(landsat_masked, r = 4, g = 3, b = 2, stretch = "lin")
+
+plot(districts, add = TRUE, border = "Yellow")
+
+# To save file:
+# writeRaster(landsat_masked, "Landsat_Districts_Only.tif", overwrite = TRUE)`);
+
+ex('ex-dip-crop-single','8','Subset of Image — Single District (Mulugu)',
+`boundary <- districts[toupper(districts$District) == "MULUGU", ]
+
+raster <- crop(landsat_data, boundary)
+raster <- mask(raster, boundary)
+
+plotRGB(raster, r = 4, g = 3, b = 2, stretch = "lin", main = "Mulugu District")
+
+# plot(boundary, add = TRUE, border = "cyan", lwd = 2)  # with boundary
+
+# To save file:
+writeRaster(landsat_masked, "Landsat_Mulugu.tif", overwrite = TRUE)`);
+
+ex('ex-dip-hpf','9','Enhancement — HPF (High Pass Filter / Sharpening)',
+`# Spatial Sharpening
+hpf <- matrix(c(-1,-1,-1,
+                -1, 10,-1,
+                -1,-1,-1), nrow = 3, ncol = 3)
+
+r_sharp <- focal(raster, w = hpf)
+
+plotRGB(r_sharp, r = 4, g = 3, b = 2, stretch = "lin", main = "Edge Enhanced Data")`);
+
+ex('ex-dip-lpf','10','Enhancement — LPF (Low Pass Filter / Smoothing)',
+`# Spatial Smoothening
+lpf <- matrix(c(1, 1, 1,
+                1,-7, 1,
+                1, 1, 1), nrow = 3, ncol = 3)
+
+r_sharp <- focal(raster, w = lpf)
+
+plotRGB(r_sharp, r = 4, g = 3, b = 2, stretch = "lin", main = "Edge Enhanced Data")`);
+
+/* ── C: NDVI & NDWI ── */
+ex('ex-ndvi-calc','1','NDVI Preparation',
+`library(terra)
+
+band3 <- rast("/content/LT05_L1TP_143047_20051110_20200901_02_T1_B3.TIF")  # Red
+band4 <- rast("/content/LT05_L1TP_143047_20051110_20200901_02_T1_B4.TIF")  # NIR
+
+ndvi <- (band4 - band3) / (band4 + band3)
+
+color_palette <- colorRampPalette(
+  c("blue","orange","yellow","lightgreen","darkgreen")
+)(100)
+
+plot(ndvi, col = color_palette, main = "Calculated NDVI Map")
+
+# writeRaster(ndvi, "Landsat5_NDVI.tif", overwrite = TRUE)`);
+
+ex('ex-ndvi-class','2','NDVI Classification — 5 Classes',
+`rcl_matrix <- matrix(c(-1,   0,   1,
+                        0,   0.2, 2,
+                        0.2, 0.4, 3,
+                        0.4, 0.6, 4,
+                        0.6, 1,   5),
+                      ncol = 3, byrow = TRUE)
+
+ndvi_classified <- classify(ndvi, rcl_matrix)
+
+levels(ndvi_classified) <- data.frame(
+  id    = 1:5,
+  label = c("Water/Cloud","Bare Soil","Sparse Veg","Moderate Veg","Dense Veg")
+)
+
+# Colors: Blue(Water), Tan(Soil), Light Green(Sparse), Green(Moderate), Dark Green(Dense)
+colors <- c("blue","orange","yellow","green3","darkgreen")
+
+plot(ndvi_classified,
+     col  = colors,
+     main = "NDVI Classified to 5 Classes",
+     plg  = list(x = "bottomright"))
+
+# 7. Save classified map
+writeRaster(ndvi_classified, "NDVI_5Classes.tif", overwrite = TRUE)`);
+
+ex('ex-ndvi-area','3','Area Classification of NDVI Classes',
+`pixel_counts <- terra::freq(ndvi_classified)
+pixel_counts$area_sqkm <- (pixel_counts$count * 900) / 1000000
+
+cat("\n--- Area of Each Class (in Sqkm) ---\n")
+print(pixel_counts)
+
+total_area_sqkm <- sum(pixel_counts$area_sqkm)
+cat("\nTotal Area (sqkm):", total_area_sqkm, "\n")`);
+
+ex('ex-ndwi-calc','4','NDWI Preparation',
+`library(terra)
+
+band2 <- rast("/content/LT05_L1TP_143047_20051110_20200901_02_T1_B2.TIF")  # Green
+band5 <- rast("/content/LT05_L1TP_143047_20051110_20200901_02_T1_B5.TIF")  # SWIR
+
+ndwi <- (band2 - band5) / (band2 + band5)
+
+color_palette <- colorRampPalette(
+  c("lightgreen","green","yellow","darkblue","darkblue")
+)(100)
+
+plot(ndwi, col = color_palette, main = "Calculated NDWI Map")
+
+# writeRaster(ndwi, "Landsat5_NDWI.tif", overwrite = TRUE)`);
+
+ex('ex-ndwi-class','5','NDWI Classification — 5 Classes',
+`classes <- matrix(c(-1,   -0.3, 1,
+                    -0.3,  0.0, 2,
+                     0.0,  0.2, 3,
+                     0.2,  0.4, 4,
+                     0.4,  1,   5),
+                   ncol = 3, byrow = TRUE)
+
+ndwi_classified <- classify(ndwi, classes)
+
+levels(ndwi_classified) <- data.frame(
+  id    = 1:5,
+  label = c("Water/Cloud","Bare Soil","Sparse Veg","Moderate Veg","Dense Veg")
+)
+
+colors <- c("green","brown","yellow","darkblue","darkblue")
+
+plot(ndwi_classified,
+     col  = colors,
+     main = "NDWI Classified to 5 Classes",
+     plg  = list(x = "bottomright"))
+
+# writeRaster(ndwi_classified, "NDWI_5Classes.tif", overwrite = TRUE)`);
+
+ex('ex-ndwi-area','6','Area Classification of NDWI Classes',
+`pixel_counts <- terra::freq(ndwi_classified)
+pixel_counts$area_sqkm <- (pixel_counts$count * 900) / 1000000
+
+cat("\n--- Area of Each Class (in Sqkm) ---\n")
+print(pixel_counts)
+
+total_area_sqkm <- sum(pixel_counts$area_sqkm)
+cat("\nTotal Area (sqkm):", total_area_sqkm, "\n")`);
+
+/* ── D: DISSOLVE ── */
+ex('ex-dis-villages','1','Displaying Villages Shapefile',
+`library(sf)
+library(ggplot2)
+
+# Read the village shapefile
+villages <- st_read("Adi_rev.shp")
+
+# View the first few rows to find the sub-district column
+head(villages)
+
+ggplot() +
+  geom_sf(data = villages, fill = "white")`);
+
+ex('ex-dis-dissolve','2','Dissolving Villages to Mandals',
+`library(dplyr)
+
+# Dissolve villages into mandals
+mandals <- villages %>%
+  group_by(Sub_dist) %>%
+  summarize(geometry = st_union(geometry))
+
+plot(mandals)
+
+st_write(mandals, "Adi_mandals.shp")`);
+
+/* ── D: BUFFER ── */
+ex('ex-buf-polygon','1','Buffer for Polygon Feature (Multiple Mandals — 2 km)',
+`library(sf)
+library(ggplot2)
+
+mandals <- st_read("Adi_mandals.shp") %>% st_transform(32644)
+canal   <- st_read("canal.shp")      %>% st_transform(32644)
+
+# Creating buffer for polygon feature
+mandals_list     <- c("UTNOOR","TAMSI","NERADIGONDA")
+multiple_mandals <- mandals[mandals$Sub_dist %in% mandals_list, ]
+multiple_buffers <- st_buffer(multiple_mandals, dist = 2000)
+
+ggplot() +
+  geom_sf(data = mandals,          fill = "white",     color = "grey") +
+  geom_sf(data = multiple_buffers, fill = "green",     alpha = 0.2, color = "darkgreen") +
+  geom_sf(data = multiple_mandals, fill = "darkgreen", alpha = 0.5) +
+  labs(title = "Multiple Mandals 2km Buffer") +
+  theme_minimal()`);
+
+ex('ex-buf-polyline','2','Buffer for Polyline Feature (Canal — 2 km)',
+`canal_buffer <- st_buffer(canal, dist = 2000)
+
+# Plotting buffer layer only
+ggplot() +
+  geom_sf(data = mandals,      fill = "white") +
+  geom_sf(data = canal,        color = "red",  size = 1) +
+  geom_sf(data = canal_buffer, fill = "blue",  alpha = 0.3)`);
+
+/* ── D: INTERSECTION ── */
+ex('ex-int-mandals','1','Canal Buffer Intersecting Mandals',
+`library(sf)
+library(ggplot2)
+
+# Load layers (ensure they are in the same projection, e.g., UTM 44N)
+mandals      <- st_read("Adi_mandals.shp")  %>% st_transform(32644)
+canal_buffer <- st_read("canal_buffer.shp") %>% st_transform(32644)
+
+# Perform the Intersection
+mandal_canal_intersect <- st_intersection(canal_buffer, mandals)
+
+# Plot to see the result
+ggplot() +
+  geom_sf(data = mandals, fill = "white", color = "lightgrey") +
+  geom_sf(data = mandal_canal_intersect, aes(fill = Sub_dist), alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Canal Buffer Intersect with Mandals")`);
+
+ex('ex-int-villages','2','Canal Buffer Intersecting Villages',
+`library(sf)
+library(ggplot2)
+
+# Load layers (ensure they are in the same projection, e.g., UTM 44N)
+villages     <- st_read("Adi_rev.shp")      %>% st_transform(32644)
+canal_buffer <- st_read("canal_buffer.shp") %>% st_transform(32644)
+
+# Perform the Intersection
+canal_intersect <- st_intersection(canal_buffer, villages)
+
+# Plot to see the result
+ggplot() +
+  geom_sf(data = villages, fill = "white", color = "lightgrey") +
+  geom_sf(data = canal_intersect, aes(fill = Sub_dist), alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Canal Buffer Intersect with Villages")
+
+st_write(canal_intersect, "canal_intersect.shp", delete_layer = TRUE)`);
+
+/* ── D: CLIP ── */
+ex('ex-clip-utnoor','1','Clipping Utnoor Village from Villages Shapefile',
+`library(sf)
+library(ggplot2)
+
+# 1. Read and prepare the data
+villages      <- st_read("Adi_rev.shp")
+single_mandal <- mandals[mandals$Sub_dist == "UTNOOR", ]
+villages      <- st_transform(villages,      32644)
+single_mandal <- st_transform(single_mandal, 32644)
+
+# 3. Perform the Clip (Intersection)
+clipped_area <- st_intersection(single_mandal, villages)
+
+# 4. CRITICAL FIX: Extract ONLY the polygons so the shapefile doesn't crash
+clipped_area <- st_collection_extract(clipped_area, "POLYGON")
+
+# 5. Plot to verify
+ggplot() +
+  geom_sf(data = villages,     fill = "white",  color = "lightgray") +
+  geom_sf(data = clipped_area, fill = "yellow", color = "darkblue", alpha = 0.6) +
+  theme_minimal() +
+  labs(title = "Village Clipped")
+
+# 6. Save the fixed shapefile
+st_write(clipped_area, "Utnoor_rev.shp", delete_layer = TRUE)`);
+
+ex('ex-clip-narnoor','2','Clipping Narnoor Village from Villages Shapefile',
+`library(sf)
+library(ggplot2)
+
+# 1. Read and prepare the data
+villages      <- st_read("Adi_rev.shp")
+single_mandal <- mandals[mandals$Sub_dist == "NARNOOR", ]
+villages      <- st_transform(villages,      32644)
+single_mandal <- st_transform(single_mandal, 32644)
+
+# Perform the Clip (Intersection)
+clipped_area <- st_intersection(single_mandal, villages)
+
+# CRITICAL FIX: Extract ONLY the polygons so the shapefile doesn't crash
+clipped_area <- st_collection_extract(clipped_area, "POLYGON")
+
+# Plot to verify
+ggplot() +
+  geom_sf(data = villages,     fill = "white",  color = "lightgray") +
+  geom_sf(data = clipped_area, fill = "yellow", color = "darkblue", alpha = 0.6) +
+  theme_minimal() +
+  labs(title = "Village Clipped")
+
+# Save the fixed shapefile
+st_write(clipped_area, "Narnoor_rev.shp", delete_layer = TRUE)`);
+
+ex('ex-clip-gadiguda','3','Clipping Gadiguda Village from Villages Shapefile',
+`library(sf)
+library(ggplot2)
+
+villages      <- st_read("Adi_rev.shp")
+single_mandal <- mandals[mandals$Sub_dist == "GADIGUDA", ]
+villages      <- st_transform(villages,      32644)
+single_mandal <- st_transform(single_mandal, 32644)
+
+clipped_area <- st_intersection(single_mandal, villages)
+clipped_area <- st_collection_extract(clipped_area, "POLYGON")
+
+ggplot() +
+  geom_sf(data = villages,     fill = "white",  color = "lightgray") +
+  geom_sf(data = clipped_area, fill = "yellow", color = "darkblue", alpha = 0.6) +
+  theme_minimal() +
+  labs(title = "Villages Clipped")
+
+st_write(clipped_area, "Gadiguda_rev.shp", delete_layer = TRUE)`);
+
+/* ── D: MERGE ── */
+ex('ex-merge','1','Merging Revenue Villages (Narnoor + Utnoor + Gadiguda)',
+`library(sf)
+library(dplyr)
+library(ggplot2)
+
+narnoor  <- st_read("Narnoor_rev.shp")
+utnoor   <- st_read("Utnoor_rev.shp")
+gadiguda <- st_read("Gadiguda_rev.shp")
+
+narnoor  <- st_transform(narnoor,  32644)
+utnoor   <- st_transform(utnoor,   32644)
+gadiguda <- st_transform(gadiguda, 32644)
+
+merged_villages <- bind_rows(narnoor, utnoor, gadiguda)
+
+ggplot() +
+  geom_sf(data = merged_villages, aes(fill = Sub_dist), color = "black", size = 0.2) +
+  theme_minimal() +
+  labs(title    = "Merged Revenue Villages",
+       subtitle = "Narnoor, Utnoor, and Gadiguda combined")
+
+# Save the new combined shapefile
+st_write(merged_villages, "Merged.shp", delete_layer = TRUE)`);
+
+/* ── D: UNION ── */
+ex('ex-union','1','Union of Revenue Villages &amp; Canal Intersect',
+`library(sf)
+library(ggplot2)
+
+revenue <- st_read("Adi_rev.shp")
+canal   <- st_read("canal_intersect.shp")
+
+# 2. Align CRS
+canal <- st_transform(canal, st_crs(revenue))
+
+# 3. Fix Geometries
+revenue <- st_make_valid(revenue)
+canal   <- st_make_valid(canal)
+
+# 4. Keep Geometry Only & Combine
+revenue_geo  <- st_sf(geometry = st_geometry(revenue))
+canal_geo    <- st_sf(geometry = st_geometry(canal))
+union_result <- rbind(revenue_geo, canal_geo)
+
+ggplot(union_result) +
+  geom_sf(fill = "grey80", colour = "grey30", linewidth = 0.3) +
+  labs(title    = "Union Result",
+       subtitle = paste("Total features:", nrow(union_result))) +
+  theme_minimal()
+
+# 6. Save
+st_write(union_result, "union.shp", delete_layer = TRUE)`);
+
+/* ─── PREV / NEXT SECTION NAV ─── */
+var LAB_SECTIONS = [
+  {id:'home',      label:'Lab Home'},
+  {id:'csv',       label:'CSV File Operations'},
+  {id:'tablemani', label:'Table Manipulation'},
+  {id:'attrtable', label:'Attribute Table (Spatial)'},
+  {id:'vector',    label:'Shapefiles, GeoJSON, KMZ'},
+  {id:'simplequery',label:'Simple Query'},
+  {id:'multiquery', label:'Multiple Query'},
+  {id:'raster',    label:'JPG, TIF & DEM'},
+  {id:'dip',       label:'Digital Image Processing'},
+  {id:'indices',   label:'NDVI & NDWI'},
+  {id:'dissolve',  label:'Dissolve'},
+  {id:'buffer',    label:'Buffer'},
+  {id:'intersection',label:'Intersection'},
+  {id:'clip',      label:'Clip'},
+  {id:'merge',     label:'Merge'},
+  {id:'union',     label:'Union'}
+];
+
+function buildSectionNav(idx) {
+  var prev = idx > 0 ? LAB_SECTIONS[idx-1] : null;
+  var next = idx < LAB_SECTIONS.length-1 ? LAB_SECTIONS[idx+1] : null;
+  var center = '<span class="sec-nav-center">' + (idx+1) + ' / ' + LAB_SECTIONS.length + '</span>';
+  var prevBtn = prev
+    ? '<button class="sec-nav-btn prev" onclick="showSection(\''+prev.id+'\',null);window.scrollTo(0,0)">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>'
+      + '<span class="sec-nav-label"><span class="sec-nav-dir">Previous</span><span class="sec-nav-name">'+prev.label+'</span></span>'
+      + '</button>'
+    : '<span></span>';
+  var nextBtn = next
+    ? '<button class="sec-nav-btn next" onclick="showSection(\''+next.id+'\',null);window.scrollTo(0,0)">'
+      + '<span class="sec-nav-label"><span class="sec-nav-dir">Next</span><span class="sec-nav-name">'+next.label+'</span></span>'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+      + '</button>'
+    : '<span></span>';
+  return '<div class="section-nav">' + prevBtn + center + nextBtn + '</div>';
+}
+
+LAB_SECTIONS.forEach(function(sec, idx) {
+  var el = document.getElementById('sec-' + sec.id);
+  if (el) {
+    var nav = document.createElement('div');
+    nav.innerHTML = buildSectionNav(idx);
+    el.appendChild(nav.firstChild);
+  }
+});
+
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>

@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Concepts of R — Theory</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0d1117;--sidebar-bg:#0a0e14;--panel-bg:#161b22;--panel-border:#21262d;
+    --accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;
+    --text:#e6edf3;--text-muted:#8b949e;--text-dim:#6e7681;
+    --code-bg:#010409;--code-border:#30363d;--hover:#1c2128;--active:#1f2937;
+    --sidebar-w:280px;--header-h:56px;
+    --keyword:#ff7b72;--string:#a5d6ff;--comment:#8b949e;--number:#79c0ff;--func:#d2a8ff;--operator:#ff7b72;
+    --th-bg:#1c2128;--console-header-bg:#1c2128;
+  }
+  :root.light {
+    --bg:#f6f8fa;--sidebar-bg:#ffffff;--panel-bg:#ffffff;--panel-border:#d0d7de;
+    --accent:#0969da;--accent2:#1a7f37;--accent3:#cf222e;--accent4:#8250df;
+    --text:#24292f;--text-muted:#57606a;--text-dim:#6e7781;
+    --code-bg:#f6f8fa;--code-border:#d0d7de;--hover:#eaeef2;--active:#dae8f4;
+    --keyword:#cf222e;--string:#0a3069;--comment:#6e7781;--number:#0550ae;--func:#8250df;--operator:#cf222e;
+    --th-bg:#eaeef2;--console-header-bg:#eaeef2;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{font-size:15px;}
+  body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+  /* HEADER */
+  header{height:var(--header-h);background:var(--sidebar-bg);border-bottom:1px solid var(--panel-border);display:flex;align-items:center;padding:0 20px;position:fixed;top:0;left:0;right:0;z-index:100;gap:14px;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem;color:var(--text);letter-spacing:.02em;}
+  .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#1a6fe6,#58a6ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;}
+  .header-badge{background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.25);color:var(--accent);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:500;letter-spacing:.04em;}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--text-muted);margin-right:4px;}
+  .hamburger svg{display:block;}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .search-box{display:flex;align-items:center;gap:8px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:6px;padding:5px 12px;font-size:.78rem;color:var(--text-muted);}
+  .search-box input{background:none;border:none;outline:none;color:var(--text);font-size:.78rem;width:140px;font-family:'Sora',sans-serif;}
+  .search-box input::placeholder{color:var(--text-dim);}
+  .theme-btn{background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-muted);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.75rem;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:6px;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;}
+  .theme-btn:hover{background:var(--hover);color:var(--text);border-color:var(--accent);}
+  .page-nav{display:flex;gap:4px;align-items:center;}
+  .nav-link{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;font-size:.75rem;font-weight:600;text-decoration:none;border:1px solid var(--panel-border);color:var(--text-muted);background:var(--panel-bg);transition:all .15s;letter-spacing:.02em;}
+  .nav-link:hover{background:var(--hover);color:var(--text);border-color:var(--accent);}
+  .nav-link.active{background:rgba(88,166,255,.12);border-color:var(--accent);color:var(--accent);}
+
+  /* LAYOUT */
+  .layout{display:flex;margin-top:var(--header-h);min-height:calc(100vh - var(--header-h));}
+
+  /* SIDEBAR */
+  aside{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--panel-border);position:fixed;top:var(--header-h);bottom:0;left:0;overflow-y:auto;overflow-x:hidden;padding:16px 0;scrollbar-width:thin;scrollbar-color:var(--panel-border) transparent;z-index:50;transition:transform .25s ease;}
+  aside::-webkit-scrollbar{width:4px;}
+  aside::-webkit-scrollbar-thumb{background:var(--panel-border);border-radius:2px;}
+  .sidebar-section{margin-bottom:4px;}
+  .sidebar-chapter{display:flex;align-items:center;justify-content:space-between;padding:9px 16px 9px 20px;cursor:pointer;color:var(--text-muted);font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;user-select:none;transition:background .15s,color .15s;}
+  .sidebar-chapter:hover{background:var(--hover);color:var(--text);}
+  .sidebar-chapter.open{color:var(--accent);}
+  .chapter-label{display:flex;align-items:center;gap:8px;}
+  .chapter-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;transition:transform .2s;}
+  .sidebar-chapter:not(.open) .chapter-dot{background:var(--text-dim);}
+  .chevron{transition:transform .25s;color:var(--text-dim);}
+  .sidebar-chapter.open .chevron{transform:rotate(90deg);color:var(--accent);}
+  .sidebar-topics{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+  .sidebar-topics.open{max-height:1000px;}
+  .sidebar-topic{display:flex;align-items:center;gap:9px;padding:7px 16px 7px 38px;cursor:pointer;font-size:.8rem;color:var(--text-muted);transition:background .15s,color .15s;border-left:2px solid transparent;}
+  .sidebar-topic:hover{background:var(--hover);color:var(--text);}
+  .sidebar-topic.active{color:var(--accent);background:rgba(88,166,255,.07);border-left-color:var(--accent);}
+  .topic-icon{font-size:.65rem;opacity:.5;}
+
+  /* MAIN */
+  main{margin-left:var(--sidebar-w);flex:1;padding:40px 48px 80px;max-width:900px;width:100%;}
+  .content-section{display:none;}
+  .content-section.active{display:block;animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* BREADCRUMB */
+  .breadcrumb{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--text-dim);margin-bottom:28px;flex-wrap:wrap;}
+  .breadcrumb .sep{color:var(--panel-border);}
+  .breadcrumb .current{color:var(--text-muted);}
+
+  /* SECTION TAG */
+  .section-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.2);color:var(--accent);font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px;}
+  h1{font-size:1.85rem;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:12px;letter-spacing:-.02em;}
+  .subtitle{color:var(--text-muted);font-size:.9rem;line-height:1.7;margin-bottom:32px;font-weight:300;}
+  h2{font-size:1.2rem;font-weight:600;color:var(--text);margin:36px 0 14px;padding-bottom:10px;border-bottom:1px solid var(--panel-border);display:flex;align-items:center;gap:10px;}
+  h2::before{content:'';display:inline-block;width:4px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+  h3{font-size:1rem;font-weight:600;color:var(--text);margin:24px 0 10px;}
+
+  /* PROSE */
+  p{color:var(--text-muted);line-height:1.75;margin-bottom:14px;font-weight:300;}
+  strong{color:var(--text);font-weight:600;}
+  ul{padding-left:0;list-style:none;margin-bottom:14px;}
+  ul li{color:var(--text-muted);padding:4px 0 4px 20px;position:relative;line-height:1.65;font-weight:300;font-size:.88rem;}
+  ul li::before{content:'▸';position:absolute;left:0;color:var(--accent);font-size:.7rem;top:6px;}
+
+  /* CODE */
+  .code-block{margin:20px 0;border-radius:10px;overflow:hidden;border:1px solid var(--code-border);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+  .console-header{display:flex;align-items:center;background:var(--console-header-bg);padding:10px 14px;border-bottom:1px solid var(--code-border);}
+  .console-dots{display:flex;gap:6px;margin-right:12px;}
+  .console-dots span{width:12px;height:12px;border-radius:50%;}
+  .console-dots span:nth-child(1){background:#f78166;}
+  .console-dots span:nth-child(2){background:#e3b341;}
+  .console-dots span:nth-child(3){background:#3fb950;}
+  .console-lang{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;}
+  .console-copy{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:.7rem;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:4px;transition:background .15s,color .15s;display:flex;align-items:center;gap:4px;}
+  .console-copy:hover{background:var(--panel-border);color:var(--text-muted);}
+  .console-copy.copied{color:var(--accent2);}
+  pre{background:var(--code-bg);padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.75;tab-size:2;scrollbar-width:thin;scrollbar-color:var(--panel-border) transparent;}
+  pre::-webkit-scrollbar{height:4px;}
+  pre::-webkit-scrollbar-thumb{background:var(--panel-border);}
+  .kw{color:var(--keyword);font-weight:500;}.fn{color:var(--func);}.str{color:var(--string);}
+  .cm{color:var(--comment);font-style:italic;}.nm{color:var(--number);}.op{color:var(--operator);}
+  .var{color:#ffa657;}.pkg{color:var(--accent2);font-weight:500;}
+
+  /* CARDS */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:20px 0;}
+  .card{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;padding:18px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .card-icon{font-size:1.4rem;margin-bottom:10px;}
+  .card-title{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px;}
+  .card-desc{font-size:.77rem;color:var(--text-muted);line-height:1.55;font-weight:300;}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;margin:16px 0;border-radius:8px;border:1px solid var(--panel-border);}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;}
+  th{background:var(--th-bg);color:var(--text-muted);font-weight:600;padding:10px 14px;text-align:left;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--panel-border);}
+  td{padding:9px 14px;border-bottom:1px solid var(--panel-border);color:var(--text-muted);vertical-align:top;line-height:1.5;}
+  td:first-child{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.78rem;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:var(--hover);}
+
+  /* CALLOUT */
+  .callout{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);border-left:3px solid var(--accent);border-radius:6px;padding:14px 18px;margin:18px 0;font-size:.84rem;color:var(--text-muted);line-height:1.65;}
+  .callout.green{background:rgba(63,185,80,.06);border-color:rgba(63,185,80,.2);border-left-color:var(--accent2);}
+  .callout.red{background:rgba(247,129,102,.06);border-color:rgba(247,129,102,.2);border-left-color:var(--accent3);}
+  .callout-title{font-weight:600;color:var(--text);margin-bottom:4px;font-size:.8rem;display:flex;align-items:center;gap:6px;}
+  code{background:#1c2128;border:1px solid var(--panel-border);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--accent);}
+
+  /* WELCOME */
+  .welcome-hero{background:linear-gradient(135deg,rgba(88,166,255,.08),rgba(210,168,255,.06));border:1px solid var(--panel-border);border-radius:14px;padding:40px;margin-bottom:32px;position:relative;overflow:hidden;}
+  .welcome-hero::before{content:'R';position:absolute;right:40px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:9rem;font-weight:700;color:rgba(88,166,255,.06);pointer-events:none;line-height:1;}
+  .welcome-hero h1{font-size:2.2rem;}
+  .toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+  .toc-item{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:.8rem;color:var(--text-muted);}
+  .toc-item:hover{border-color:var(--accent);color:var(--text);background:var(--hover);transform:translateY(-1px);}
+  .toc-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);font-weight:700;flex-shrink:0;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;}
+
+  /* SECTION PREV/NEXT NAV */
+  .section-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:56px;padding-top:24px;border-top:1px solid var(--panel-border);}
+  .sec-nav-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-size:.8rem;font-weight:600;font-family:'Sora',sans-serif;border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--text-muted);cursor:pointer;transition:all .18s;letter-spacing:.01em;}
+  .sec-nav-btn:hover{background:var(--hover);border-color:var(--accent);color:var(--text);}
+  .sec-nav-btn:disabled,.sec-nav-btn[disabled]{opacity:.3;pointer-events:none;}
+  .sec-nav-label{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
+  .sec-nav-btn.next .sec-nav-label{align-items:flex-end;}
+  .sec-nav-dir{font-size:.62rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);}
+  .sec-nav-name{font-size:.8rem;font-weight:600;color:var(--text);}
+  .sec-nav-center{font-size:.72rem;color:var(--text-dim);letter-spacing:.04em;text-align:center;}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    aside{transform:translateX(-100%);}
+    aside.open{transform:translateX(0);}
+    main{margin-left:0;padding:24px 20px 60px;max-width:100%;}
+    .hamburger{display:flex;}
+    .overlay.open{display:block;}
+    .search-box{display:none;}
+    h1{font-size:1.4rem;}
+    .welcome-hero{padding:24px;}
+    .welcome-hero::before{display:none;}
+    .page-nav{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+  </button>
+  <div class="logo"><div class="logo-icon">R</div>Concepts of R</div>
+  <span class="header-badge">Study Notes</span>
+  <div class="header-right">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search topics…" oninput="searchTopics(this.value)"/>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+      <span id="themeIcon">☀️</span><span id="themeLabel">Light</span>
+    </button>
+    <nav class="page-nav">
+      <a class="nav-link" href="index.html">🏠 Home</a>
+      <a class="nav-link active" href="theory.html">📘 Theory</a>
+      <a class="nav-link" href="lab.html">🧪 Lab</a>
+    </nav>
+  </div>
+</header>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+
+<aside id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-chapter open" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>Overview</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics open">
+      <div class="sidebar-topic active" onclick="showSection('welcome',this)"><span class="topic-icon">◉</span> Home</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>Chapter 1 — R Basics</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('intro',this)"><span class="topic-icon">◎</span> Introduction to R</div>
+      <div class="sidebar-topic" onclick="showSection('geospatial',this)"><span class="topic-icon">◎</span> R in Geospatial Tech</div>
+      <div class="sidebar-topic" onclick="showSection('datatypes',this)"><span class="topic-icon">◎</span> Data Types &amp; Structures</div>
+      <div class="sidebar-topic" onclick="showSection('syntax',this)"><span class="topic-icon">◎</span> Basic R Syntax</div>
+      <div class="sidebar-topic" onclick="showSection('compilers',this)"><span class="topic-icon">◎</span> R Compilers &amp; IDEs</div>
+      <div class="sidebar-topic" onclick="showSection('packages',this)"><span class="topic-icon">◎</span> Packages in R</div>
+      <div class="sidebar-topic" onclick="showSection('inputdata',this)"><span class="topic-icon">◎</span> Input Data in R</div>
+      <div class="sidebar-topic" onclick="showSection('datamani',this)"><span class="topic-icon">◎</span> Data Manipulation</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>Chapter 2 — Visualization</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('vectorvis',this)"><span class="topic-icon">◎</span> Vector Data Visualization</div>
+      <div class="sidebar-topic" onclick="showSection('thematic',this)"><span class="topic-icon">◎</span> Thematic Mapping</div>
+      <div class="sidebar-topic" onclick="showSection('crs',this)"><span class="topic-icon">◎</span> CRS &amp; Projections</div>
+      <div class="sidebar-topic" onclick="showSection('rastervis',this)"><span class="topic-icon">◎</span> Raster Data Visualization</div>
+      <div class="sidebar-topic" onclick="showSection('bands',this)"><span class="topic-icon">◎</span> Spectral Bands &amp; NDVI</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>Chapter 3 — GIS Analysis</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="showSection('querying',this)"><span class="topic-icon">◎</span> Querying &amp; Selection</div>
+      <div class="sidebar-topic" onclick="showSection('geotools',this)"><span class="topic-icon">◎</span> Geo Processing Tools</div>
+      <div class="sidebar-topic" onclick="showSection('stats',this)"><span class="topic-icon">◎</span> Statistical Analysis</div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-chapter" onclick="toggleChapter(this)">
+      <div class="chapter-label"><span class="chapter-dot"></span>🧪 Lab</div>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="sidebar-topics">
+      <div class="sidebar-topic" onclick="window.location='lab.html'"><span class="topic-icon">◉</span> Go to Lab →</div>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <!-- HOME -->
+  <div class="content-section active" id="sec-welcome">
+    <div class="welcome-hero">
+      <div class="section-tag">📘 R Programming</div>
+      <h1>Concepts of R — Theory</h1>
+      <p class="subtitle">A complete study guide covering R programming fundamentals, geospatial data analysis, visualization techniques, and GIS processing workflows across 3 chapters.</p>
+    </div>
+    <h2>Table of Contents</h2>
+    <div class="toc">
+      <div class="toc-item" onclick="showSection('intro',null)"><span class="toc-num">1.1</span> Introduction to R</div>
+      <div class="toc-item" onclick="showSection('geospatial',null)"><span class="toc-num">1.2</span> R in Geospatial Tech</div>
+      <div class="toc-item" onclick="showSection('datatypes',null)"><span class="toc-num">1.3</span> Data Types &amp; Structures</div>
+      <div class="toc-item" onclick="showSection('syntax',null)"><span class="toc-num">1.4</span> Basic R Syntax</div>
+      <div class="toc-item" onclick="showSection('compilers',null)"><span class="toc-num">1.5</span> Compilers &amp; IDEs</div>
+      <div class="toc-item" onclick="showSection('packages',null)"><span class="toc-num">1.6</span> Packages in R</div>
+      <div class="toc-item" onclick="showSection('inputdata',null)"><span class="toc-num">1.7</span> Input Data in R</div>
+      <div class="toc-item" onclick="showSection('datamani',null)"><span class="toc-num">1.8</span> Data Manipulation</div>
+      <div class="toc-item" onclick="showSection('vectorvis',null)"><span class="toc-num">2.1</span> Vector Visualization</div>
+      <div class="toc-item" onclick="showSection('thematic',null)"><span class="toc-num">2.2</span> Thematic Mapping</div>
+      <div class="toc-item" onclick="showSection('crs',null)"><span class="toc-num">2.3</span> CRS &amp; Projections</div>
+      <div class="toc-item" onclick="showSection('rastervis',null)"><span class="toc-num">2.4</span> Raster Visualization</div>
+      <div class="toc-item" onclick="showSection('bands',null)"><span class="toc-num">2.5</span> Spectral Bands &amp; NDVI</div>
+      <div class="toc-item" onclick="showSection('querying',null)"><span class="toc-num">3.1</span> Querying &amp; Selection</div>
+      <div class="toc-item" onclick="showSection('geotools',null)"><span class="toc-num">3.2</span> Geo Processing</div>
+      <div class="toc-item" onclick="showSection('stats',null)"><span class="toc-num">3.3</span> Statistical Analysis</div>
+      <div class="toc-item" onclick="window.location='lab.html'" style="border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.04);">
+        <span class="toc-num" style="color:var(--accent2)">🧪</span> Lab Exercises
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.1 INTRO -->
+  <div class="content-section" id="sec-intro">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">Introduction to R</span></div>
+    <div class="section-tag">1.1 Introduction</div>
+    <h1>Introduction to R</h1>
+    <p class="subtitle">R was originally created by statisticians for statistical computing, but has grown into one of the most powerful programming languages for data analysis.</p>
+    <h2>Key Application Areas</h2>
+    <div class="cards">
+      <div class="card"><div class="card-icon">📊</div><div class="card-title">Data Science &amp; ML</div><div class="card-desc">Predictive modeling, clustering, and data mining workflows.</div></div>
+      <div class="card"><div class="card-icon">💹</div><div class="card-title">Finance &amp; Economics</div><div class="card-desc">Stock market forecasting, risk analysis, and econometrics.</div></div>
+      <div class="card"><div class="card-icon">🧬</div><div class="card-title">Bioinformatics</div><div class="card-desc">Genomic data analysis, epidemiology, and clinical trials.</div></div>
+      <div class="card"><div class="card-icon">🌐</div><div class="card-title">Web Dashboards</div><div class="card-desc">Tools like Shiny allow building interactive web apps from R.</div></div>
+      <div class="card"><div class="card-icon">🎓</div><div class="card-title">Academia &amp; Research</div><div class="card-desc">Gold standard for publishing reproducible scientific research.</div></div>
+    </div>
+    <h2>Key Features of R</h2>
+    <ul>
+      <li><strong>Open-source</strong> — Free to use and modify</li>
+      <li><strong>Statistical capabilities</strong> — Supports advanced statistical modeling</li>
+      <li><strong>Data visualization</strong> — Integrated tools like ggplot2 for high-quality graphics</li>
+      <li><strong>Integration</strong> — Works with Python, C, C++, Java, and SQL</li>
+    </ul>
+    <div class="callout"><div class="callout-title">💡 Note</div>R is both a programming language AND an environment with tools for data handling, calculation, and graphical display.</div>
+  </div>
+
+  <!-- 1.2 GEOSPATIAL -->
+  <div class="content-section" id="sec-geospatial">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">R in Geospatial Technology</span></div>
+    <div class="section-tag">1.2 Geospatial</div>
+    <h1>R in Geospatial Technology</h1>
+    <p class="subtitle">In R, almost everything — numbers, tables, plots, and even maps — is treated as an object, making data handling very flexible.</p>
+    <h2>Why Use R for GIS?</h2>
+    <div class="cards">
+      <div class="card"><div class="card-icon">🔁</div><div class="card-title">Reproducibility</div><div class="card-desc">If you get updated LULC data, just re-run your script. No re-clicking required.</div></div>
+      <div class="card"><div class="card-icon">⚙️</div><div class="card-title">Automation</div><div class="card-desc">Loop through and process hundreds of satellite images or shapefiles at once.</div></div>
+      <div class="card"><div class="card-icon">📐</div><div class="card-title">Advanced Statistics</div><div class="card-desc">Seamlessly combine spatial data with advanced statistical modeling.</div></div>
+    </div>
+    <h2>R's Role in Geospatial</h2>
+    <p>R provides thousands of pre-built packages for performing advanced tasks such as machine learning, time-series analysis, and geospatial analysis without writing complex code from scratch.</p>
+    <div class="callout green"><div class="callout-title">✅ Best for</div>Researchers and analysts who need to combine spatial data processing with statistical modeling and visualization in a single reproducible workflow.</div>
+  </div>
+
+  <!-- 1.3 DATA TYPES -->
+  <div class="content-section" id="sec-datatypes">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">Data Types &amp; Structures</span></div>
+    <div class="section-tag">1.3 Data Types</div>
+    <h1>Data Types &amp; Structures</h1>
+    <p class="subtitle">Understanding how R stores data is the first step to mastering it.</p>
+    <h2>Basic Data Types</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+      <tr><td>Numeric</td><td>Numbers with decimals</td><td>17.5, 44</td></tr>
+      <tr><td>Integer</td><td>Whole numbers (suffix L)</td><td>10L</td></tr>
+      <tr><td>Character</td><td>Text / strings</td><td>"Hyderabad"</td></tr>
+      <tr><td>Logical</td><td>Boolean values</td><td>TRUE, FALSE</td></tr>
+    </table></div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Data Types Example</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># Assigning different data types</span>
+<span class="var">num</span>  <span class="op">&lt;-</span> <span class="nm">45.5</span>
+<span class="var">text</span> <span class="op">&lt;-</span> <span class="str">"R Language"</span>
+<span class="var">flag</span> <span class="op">&lt;-</span> <span class="kw">TRUE</span>
+
+<span class="cm"># Checking types</span>
+<span class="fn">class</span>(num)   <span class="cm"># "numeric"</span>
+<span class="fn">class</span>(text)  <span class="cm"># "character"</span>
+<span class="fn">class</span>(flag)  <span class="cm"># "logical"</span></pre>
+    </div>
+    <h2>Data Structures</h2>
+    <h3>Vector — 1D Sequence</h3>
+    <p>A one-dimensional sequence of elements of the same data type.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Vectors</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># A character vector of Telangana districts</span>
+<span class="var">districts</span> <span class="op">&lt;-</span> <span class="fn">c</span>(<span class="str">"Hyderabad"</span>, <span class="str">"Medak"</span>, <span class="str">"Adilabad"</span>, <span class="str">"Warangal"</span>)
+
+<span class="cm"># A numeric vector representing land area in sq km</span>
+<span class="var">area_sqkm</span> <span class="op">&lt;-</span> <span class="fn">c</span>(<span class="nm">217</span>, <span class="nm">2740</span>, <span class="nm">4153</span>, <span class="nm">1975</span>)</pre>
+    </div>
+    <h3>Matrix — 2D Grid</h3>
+    <p>A two-dimensional grid where all elements must be of the same data type.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Matrix</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># Creating a 3x3 matrix of elevation values</span>
+<span class="var">elevation_values</span> <span class="op">&lt;-</span> <span class="fn">matrix</span>(
+  <span class="fn">c</span>(<span class="nm">500</span>, <span class="nm">520</span>, <span class="nm">510</span>,
+    <span class="nm">490</span>, <span class="nm">480</span>, <span class="nm">505</span>,
+    <span class="nm">515</span>, <span class="nm">530</span>, <span class="nm">525</span>),
+  nrow <span class="op">=</span> <span class="nm">3</span>, ncol <span class="op">=</span> <span class="nm">3</span>
+)</pre>
+    </div>
+    <h3>Data Frame — The Powerhouse</h3>
+    <p>A 2D table where each column can be a different data type. Similar to a SQL table or Excel file.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Data Frame</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="var">telangana_data</span> <span class="op">&lt;-</span> <span class="fn">data.frame</span>(
+  District        <span class="op">=</span> <span class="fn">c</span>(<span class="str">"Hyderabad"</span>, <span class="str">"Medak"</span>, <span class="str">"Adilabad"</span>),
+  Area_SqKm       <span class="op">=</span> <span class="fn">c</span>(<span class="nm">217</span>, <span class="nm">2740</span>, <span class="nm">4153</span>),
+  Is_Urban_Center <span class="op">=</span> <span class="fn">c</span>(<span class="kw">TRUE</span>, <span class="kw">FALSE</span>, <span class="kw">FALSE</span>)
+)</pre>
+    </div>
+    <h3>List — Most Flexible</h3>
+    <p>Can hold any combination of structures: vectors, matrices, data frames.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — List</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="var">my_project_data</span> <span class="op">&lt;-</span> <span class="fn">list</span>(
+  study_areas    <span class="op">=</span> districts,         <span class="cm"># A vector</span>
+  elevation_grid <span class="op">=</span> elevation_values,   <span class="cm"># A matrix</span>
+  demographics   <span class="op">=</span> telangana_data      <span class="cm"># A data frame</span>
+)</pre>
+    </div>
+  </div>
+
+  <!-- 1.4 SYNTAX -->
+  <div class="content-section" id="sec-syntax">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">Basic R Syntax</span></div>
+    <div class="section-tag">1.4 Syntax</div>
+    <h1>Basic R Syntax</h1>
+    <p class="subtitle">R follows a simple and readable syntax. Commands are executed line by line.</p>
+    <h2>Core Syntax Rules</h2>
+    <ul>
+      <li>Use <code>&lt;-</code> as the assignment operator to store values in variables</li>
+      <li>R is <strong>case-sensitive</strong> — <code>Data</code> and <code>data</code> are different objects</li>
+      <li>Comments begin with <code>#</code> and are ignored during execution</li>
+      <li>Variables do not need explicit type declaration</li>
+    </ul>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Basic Syntax</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># Assigning a value to a variable</span>
+<span class="var">population</span> <span class="op">&lt;-</span> <span class="nm">3500000</span>
+
+<span class="cm"># Simple arithmetic</span>
+<span class="var">total_area</span> <span class="op">&lt;-</span> <span class="nm">500</span> <span class="op">+</span> <span class="nm">250</span>
+
+<span class="cm"># Printing a variable</span>
+<span class="fn">print</span>(population)
+
+<span class="cm"># String concatenation</span>
+<span class="fn">paste</span>(<span class="str">"City:"</span>, <span class="str">"Hyderabad"</span>)</pre>
+    </div>
+    <div class="callout"><div class="callout-title">📌 Key Note</div>R is an <strong>interpreted</strong> language — it reads and executes code line-by-line rather than compiling all at once.</div>
+  </div>
+
+  <!-- 1.5 COMPILERS -->
+  <div class="content-section" id="sec-compilers">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">R Compilers &amp; IDEs</span></div>
+    <div class="section-tag">1.5 Compilers</div>
+    <h1>R Compilers &amp; IDEs</h1>
+    <p class="subtitle">Technically, R is an interpreted language. Several environments exist to run R code.</p>
+    <h2>Online Compilers</h2>
+    <div class="cards">
+      <div class="card"><div class="card-icon">☁️</div><div class="card-title">Google Colab</div><div class="card-desc">colab.research.google.com — Free cloud notebooks with GPU support.</div></div>
+      <div class="card"><div class="card-icon">💻</div><div class="card-title">OneCompiler</div><div class="card-desc">onecompiler.com — Quick R code execution in the browser.</div></div>
+      <div class="card"><div class="card-icon">🐍</div><div class="card-title">Programiz</div><div class="card-desc">programiz.com/r/online-compiler — Beginner-friendly online R compiler.</div></div>
+      <div class="card"><div class="card-icon">🔧</div><div class="card-title">JDoodle</div><div class="card-desc">jdoodle.com — Supports multiple languages including R online.</div></div>
+    </div>
+    <h2>RStudio (Offline IDE)</h2>
+    <p>RStudio is the industry standard. It provides a beautiful interface divided into four panes: <strong>Script Editor</strong>, <strong>Console</strong>, <strong>Workspace/Environment</strong>, and <strong>Plots/Files</strong>.</p>
+    <h3>Installation Steps</h3>
+    <ul>
+      <li><strong>Step 1:</strong> Install Base R from <code>cran.r-project.org</code></li>
+      <li><strong>Step 2:</strong> Install RStudio Desktop from <code>posit.co/downloads</code></li>
+    </ul>
+    <div class="callout green"><div class="callout-title">✅ Recommended</div>RStudio is the best environment for beginners and professionals alike. Install Base R first, then RStudio on top of it.</div>
+  </div>
+
+  <!-- 1.6 PACKAGES -->
+  <div class="content-section" id="sec-packages">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">Packages in R</span></div>
+    <div class="section-tag">1.6 Packages</div>
+    <h1>Packages Used in R</h1>
+    <p class="subtitle">R's power comes from its vast library of packages for every domain of analysis.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Package Management</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># Install a package (do this ONCE)</span>
+<span class="fn">install.packages</span>(<span class="str">"packageName"</span>)
+
+<span class="cm"># Load the package (do this every session)</span>
+<span class="fn">library</span>(packageName)</pre>
+    </div>
+    <h2>Core Spatial Packages</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Package</th><th>Data Type</th><th>Purpose</th></tr>
+      <tr><td>sf</td><td>Vector</td><td>Reading, writing &amp; manipulating simple features</td></tr>
+      <tr><td>sp</td><td>Vector</td><td>Legacy spatial classes for points, lines, polygons</td></tr>
+      <tr><td>terra</td><td>Raster &amp; Vector</td><td>Modern raster/vector processing (replaces raster)</td></tr>
+      <tr><td>raster</td><td>Raster</td><td>Reading, writing &amp; analyzing gridded data (legacy)</td></tr>
+      <tr><td>stars</td><td>Raster &amp; Vector</td><td>Spatiotemporal array data cubes with time dimensions</td></tr>
+    </table></div>
+    <h2>Visualization Packages</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Package</th><th>Data Type</th><th>Purpose</th></tr>
+      <tr><td>ggplot2</td><td>Vector &amp; Raster</td><td>Static maps using geom_sf() for sf objects</td></tr>
+      <tr><td>tmap</td><td>Vector &amp; Raster</td><td>Thematic maps — static and interactive</td></tr>
+      <tr><td>leaflet</td><td>Vector &amp; Raster</td><td>Interactive web maps using Leaflet.js</td></tr>
+    </table></div>
+    <h2>Data Manipulation Packages</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Package</th><th>Purpose</th></tr>
+      <tr><td>dplyr</td><td>Data manipulation verbs (filter, select, mutate, summarize)</td></tr>
+      <tr><td>tidyr</td><td>Reshaping and tidying spatial/tabular data</td></tr>
+      <tr><td>purrr</td><td>Functional programming for batch spatial workflows</td></tr>
+      <tr><td>data.table</td><td>Fast data manipulation for large datasets</td></tr>
+    </table></div>
+  </div>
+
+  <!-- 1.7 INPUT DATA -->
+  <div class="content-section" id="sec-inputdata">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">Input Data in R</span></div>
+    <div class="section-tag">1.7 Input Data</div>
+    <h1>Input Data Used in R</h1>
+    <p class="subtitle">R works with both non-spatial and spatial data types.</p>
+    <h2>Non-Spatial Data</h2>
+    <p>Standard tables and databases — CSV, Excel files.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Reading CSV</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="var">schools_data</span> <span class="op">&lt;-</span> <span class="fn">read.csv</span>(<span class="str">"KGBV_schools_telangana.csv"</span>)</pre>
+    </div>
+    <h2>Spatial — Vector Data</h2>
+    <p>Represents features using points, lines, and polygons. Formats include: Shapefiles (.shp), GeoJSON, GeoPackage (.gpkg), KML/KMZ.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Reading Vector Data</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>)
+<span class="var">roads</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"NH44_highway.shp"</span>)</pre>
+    </div>
+    <h2>Spatial — Raster Data</h2>
+    <p>Represents continuous data across a grid of pixels. Formats include: GeoTIFF (.tif), ASCII grids, satellite imagery.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Reading Raster Data</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">terra</span>)
+<span class="var">elevation</span> <span class="op">&lt;-</span> <span class="fn">rast</span>(<span class="str">"dem_hyderabad.tif"</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 1.8 DATA MANIPULATION -->
+  <div class="content-section" id="sec-datamani">
+    <div class="breadcrumb"><span>Chapter 1</span><span class="sep">›</span><span class="current">Data Manipulation</span></div>
+    <div class="section-tag">1.8 Data Manipulation</div>
+    <h1>Data Manipulation</h1>
+    <p class="subtitle">Raw data is rarely ready for analysis. The tidyverse — especially dplyr — provides the key tools.</p>
+    <h2>Core dplyr Verbs</h2>
+    <div class="cards">
+      <div class="card"><div class="card-icon">🔍</div><div class="card-title">filter()</div><div class="card-desc">Keep rows that match a condition.</div></div>
+      <div class="card"><div class="card-icon">📋</div><div class="card-title">select()</div><div class="card-desc">Pick specific columns by name.</div></div>
+      <div class="card"><div class="card-icon">➕</div><div class="card-title">mutate()</div><div class="card-desc">Add new columns or change existing ones.</div></div>
+      <div class="card"><div class="card-icon">📊</div><div class="card-title">summarize()</div><div class="card-desc">Calculate summary statistics like averages or totals.</div></div>
+    </div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — dplyr Data Manipulation</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>)
+<span class="fn">library</span>(<span class="pkg">dplyr</span>)
+
+<span class="cm"># Read a shapefile of all mandals</span>
+<span class="var">all_mandals</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"telangana_mandals.shp"</span>)
+
+<span class="cm"># Filter mandals in Warangal district only</span>
+<span class="var">specific_district_mandals</span> <span class="op">&lt;-</span> all_mandals <span class="op">%&gt;%</span>
+  <span class="fn">filter</span>(District <span class="op">==</span> <span class="str">"Warangal"</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 2.1 VECTOR VIS -->
+  <div class="content-section" id="sec-vectorvis">
+    <div class="breadcrumb"><span>Chapter 2</span><span class="sep">›</span><span class="current">Vector Data Visualization</span></div>
+    <div class="section-tag">2.1 Vector Visualization</div>
+    <h1>Vector Data Creation &amp; Visualization</h1>
+    <p class="subtitle">Vector data represents the world using discrete geometry: points, lines, and polygons.</p>
+    <h2>Geometry Types</h2>
+    <div class="cards">
+      <div class="card"><div class="card-icon">📍</div><div class="card-title">Points</div><div class="card-desc">A single X,Y coordinate. E.g., location of a KGBV school or temple.</div></div>
+      <div class="card"><div class="card-icon">〰️</div><div class="card-title">Lines</div><div class="card-desc">A connected series of points. E.g., path of National Highway 44.</div></div>
+      <div class="card"><div class="card-icon">⬡</div><div class="card-title">Polygons</div><div class="card-desc">A closed shape representing an area. E.g., district boundary.</div></div>
+    </div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Creating Vector Geometries</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>)
+
+<span class="cm"># 1. Create a Point (Hyderabad coordinates)</span>
+<span class="var">hyd_point</span> <span class="op">&lt;-</span> <span class="fn">st_point</span>(<span class="fn">c</span>(<span class="nm">78.4867</span>, <span class="nm">17.3850</span>))
+
+<span class="cm"># 2. Create a Line (simplified NH44 segment)</span>
+<span class="var">nh44_coords</span> <span class="op">&lt;-</span> <span class="fn">matrix</span>(<span class="fn">c</span>(<span class="nm">78.40</span>, <span class="nm">17.30</span>,
+                        <span class="nm">78.45</span>, <span class="nm">17.50</span>,
+                        <span class="nm">78.55</span>, <span class="nm">17.80</span>), ncol<span class="op">=</span><span class="nm">2</span>, byrow<span class="op">=</span><span class="kw">TRUE</span>)
+<span class="var">nh44_line</span> <span class="op">&lt;-</span> <span class="fn">st_linestring</span>(nh44_coords)
+
+<span class="cm"># 3. Create a Polygon (must close the loop!)</span>
+<span class="var">boundary_coords</span> <span class="op">&lt;-</span> <span class="fn">matrix</span>(<span class="fn">c</span>(<span class="nm">78.0</span>,<span class="nm">17.0</span>, <span class="nm">79.0</span>,<span class="nm">17.0</span>, <span class="nm">79.0</span>,<span class="nm">18.0</span>,
+                            <span class="nm">78.0</span>,<span class="nm">18.0</span>, <span class="nm">78.0</span>,<span class="nm">17.0</span>), ncol<span class="op">=</span><span class="nm">2</span>, byrow<span class="op">=</span><span class="kw">TRUE</span>)
+<span class="var">district_poly</span> <span class="op">&lt;-</span> <span class="fn">st_polygon</span>(<span class="fn">list</span>(boundary_coords))
+
+<span class="cm"># Plotting all geometries together</span>
+<span class="fn">plot</span>(district_poly, col<span class="op">=</span><span class="str">"lightgrey"</span>, main<span class="op">=</span><span class="str">"Vector Geometries"</span>)
+<span class="fn">plot</span>(nh44_line,    col<span class="op">=</span><span class="str">"blue"</span>,      lwd<span class="op">=</span><span class="nm">2</span>,  add<span class="op">=</span><span class="kw">TRUE</span>)
+<span class="fn">plot</span>(hyd_point,   col<span class="op">=</span><span class="str">"red"</span>,       pch<span class="op">=</span><span class="nm">16</span>, add<span class="op">=</span><span class="kw">TRUE</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 2.2 THEMATIC -->
+  <div class="content-section" id="sec-thematic">
+    <div class="breadcrumb"><span>Chapter 2</span><span class="sep">›</span><span class="current">Thematic Mapping</span></div>
+    <div class="section-tag">2.2 Thematic Mapping</div>
+    <h1>Thematic Mapping</h1>
+    <p class="subtitle">Instead of just showing where things are, thematic maps show what is happening there.</p>
+    <h2>Choropleth Maps</h2>
+    <p>Uses color shading inside polygons (districts, mandals) to represent a statistical value. Low numbers = light color, high numbers = dark color.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Choropleth Map</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>)
+<span class="fn">library</span>(<span class="pkg">ggplot2</span>)
+
+<span class="var">telangana_districts</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"TS_DISTRICTS_UTM.shp"</span>)
+
+<span class="fn">ggplot</span>(data <span class="op">=</span> telangana_districts) <span class="op">+</span>
+  <span class="fn">geom_sf</span>(<span class="fn">aes</span>(fill <span class="op">=</span> area), color<span class="op">=</span><span class="str">"black"</span>, linewidth<span class="op">=</span><span class="nm">0.2</span>) <span class="op">+</span>
+  <span class="fn">scale_fill_viridis_c</span>(name<span class="op">=</span><span class="str">"District Area"</span>, option<span class="op">=</span><span class="str">"magma"</span>) <span class="op">+</span>
+  <span class="fn">labs</span>(title<span class="op">=</span><span class="str">"Size of Telangana Districts"</span>,
+       subtitle<span class="op">=</span><span class="str">"Choropleth Map based on Geographic Area"</span>) <span class="op">+</span>
+  <span class="fn">theme_minimal</span>()</pre>
+    </div>
+    <h2>Heat Maps (KDE)</h2>
+    <p>Kernel Density Estimation — creates a smooth, continuous surface showing where points are concentrated. Useful for finding "hotspots".</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Heat Map / KDE</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>); <span class="fn">library</span>(<span class="pkg">ggplot2</span>)
+
+<span class="var">temples_sf</span> <span class="op">&lt;-</span> <span class="fn">st_as_sf</span>(temples_df,
+  coords<span class="op">=</span><span class="fn">c</span>(<span class="str">"Longitude"</span>,<span class="str">"Latitude"</span>), crs<span class="op">=</span><span class="nm">4326</span>)
+<span class="var">coords</span> <span class="op">&lt;-</span> <span class="fn">as.data.frame</span>(<span class="fn">st_coordinates</span>(temples_sf))
+
+<span class="fn">ggplot</span>() <span class="op">+</span>
+  <span class="fn">geom_sf</span>(data<span class="op">=</span>districts_sf, fill<span class="op">=</span><span class="str">"#f0f0f0"</span>, color<span class="op">=</span><span class="str">"white"</span>) <span class="op">+</span>
+  <span class="fn">stat_density_2d</span>(data<span class="op">=</span>coords,
+    <span class="fn">aes</span>(x<span class="op">=</span>X, y<span class="op">=</span>Y, fill<span class="op">=</span><span class="fn">after_stat</span>(level)),
+    geom<span class="op">=</span><span class="str">"polygon"</span>, bins<span class="op">=</span><span class="nm">25</span>, alpha<span class="op">=</span><span class="nm">0.6</span>) <span class="op">+</span>
+  <span class="fn">scale_fill_gradientn</span>(
+    colors<span class="op">=</span><span class="fn">c</span>(<span class="str">"blue"</span>,<span class="str">"green"</span>,<span class="str">"yellow"</span>,<span class="str">"orange"</span>,<span class="str">"red"</span>),
+    name<span class="op">=</span><span class="str">"Temple Density"</span>)</pre>
+    </div>
+    <h2>Spatial Clustering (K-Means)</h2>
+    <p>Groups locations into clusters using mathematical algorithms. Useful for dividing villages into zones or assigning regional managers.</p>
+    <div class="callout"><div class="callout-title">💡 Algorithm</div>You tell the computer how many clusters you want (e.g., k = 5). K-means groups points so that points in the same cluster are as close to each other as possible.</div>
+  </div>
+
+  <!-- 2.3 CRS -->
+  <div class="content-section" id="sec-crs">
+    <div class="breadcrumb"><span>Chapter 2</span><span class="sep">›</span><span class="current">CRS &amp; Projections</span></div>
+    <div class="section-tag">2.3 CRS</div>
+    <h1>CRS, Georeferencing &amp; Projections</h1>
+    <p class="subtitle">A CRS tells the computer how a 2D map relates to the real, 3D Earth.</p>
+    <h2>Types of CRS</h2>
+    <div class="cards">
+      <div class="card"><div class="card-icon">🌍</div><div class="card-title">Geographic CRS</div><div class="card-desc">Uses degrees (Longitude/Latitude). Example: WGS 84 (EPSG: 4326). Good for global locations.</div></div>
+      <div class="card"><div class="card-icon">📏</div><div class="card-title">Projected CRS</div><div class="card-desc">Uses linear units (meters/feet). Flattens the earth to calculate accurate distances. Example: UTM zones.</div></div>
+    </div>
+    <h2>Common EPSG Codes for India</h2>
+    <div class="table-wrap"><table>
+      <tr><th>EPSG</th><th>Name</th><th>Type</th><th>Best Used For</th></tr>
+      <tr><td>4326</td><td>WGS84</td><td>Geographic (degrees)</td><td>Global maps, GPS, web mapping</td></tr>
+      <tr><td>32643</td><td>UTM Zone 43N</td><td>Projected (meters)</td><td>Western India (Gujarat, Rajasthan)</td></tr>
+      <tr><td>32644</td><td>UTM Zone 44N</td><td>Projected (meters)</td><td>Central India (Hyderabad, Nagpur)</td></tr>
+      <tr><td>32645</td><td>UTM Zone 45N</td><td>Projected (meters)</td><td>Eastern India (Kolkata, Odisha)</td></tr>
+      <tr><td>3857</td><td>Web Mercator</td><td>Projected (meters)</td><td>Google Maps, OpenStreetMap tiles</td></tr>
+    </table></div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — CRS Transformation</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># Transform data to a different projection</span>
+<span class="var">data_projected</span> <span class="op">&lt;-</span> <span class="fn">st_transform</span>(data, crs<span class="op">=</span><span class="nm">3857</span>)
+
+<span class="cm"># Check current CRS</span>
+<span class="fn">st_crs</span>(data)
+
+<span class="cm"># Overlaying multiple layers — ensure same CRS!</span>
+<span class="var">highway_layer</span> <span class="op">&lt;-</span> <span class="fn">st_transform</span>(highway_layer, <span class="fn">st_crs</span>(districts_layer))
+<span class="var">temples_layer</span> <span class="op">&lt;-</span> <span class="fn">st_transform</span>(temples_layer, <span class="fn">st_crs</span>(districts_layer))</pre>
+    </div>
+    <div class="callout red"><div class="callout-title">⚠️ Warning</div>When overlaying multiple layers, always ensure they are in the SAME CRS. Mismatched projections are a very common source of errors in GIS analysis.</div>
+  </div>
+
+  <!-- 2.4 RASTER VIS -->
+  <div class="content-section" id="sec-rastervis">
+    <div class="breadcrumb"><span>Chapter 2</span><span class="sep">›</span><span class="current">Raster Data Visualization</span></div>
+    <div class="section-tag">2.4 Raster</div>
+    <h1>Raster Data Visualization</h1>
+    <p class="subtitle">Raster data stores geographic information as a regular grid of cells, like a digital image where each pixel has a value.</p>
+    <h2>Raster Structure Concepts</h2>
+    <ul>
+      <li><strong>Pixels/Cells:</strong> Each pixel holds exactly one numeric value (elevation, temperature, reflectance)</li>
+      <li><strong>High Resolution:</strong> Small pixels (1 pixel = 1 meter) — fine detail, more memory</li>
+      <li><strong>Low Resolution:</strong> Large pixels (1 pixel = 1 km) — good for large areas, less detail</li>
+      <li><strong>Spatial Resolution:</strong> For Landsat imagery, this is 30m × 30m per pixel</li>
+    </ul>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Single Band Raster Display</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">terra</span>)
+
+<span class="cm"># Load a single band from Landsat</span>
+<span class="var">band</span> <span class="op">&lt;-</span> <span class="fn">rast</span>(<span class="str">"LT05_L1TP_143047_20051110_B1.TIF"</span>)
+
+<span class="cm"># Display with grayscale palette</span>
+<span class="fn">plot</span>(band, col<span class="op">=</span><span class="fn">gray.colors</span>(<span class="nm">256</span>))</pre>
+    </div>
+    <h2>Satellite Imagery — Multi-band</h2>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Multi-band Landsat</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="cm"># Stack multiple bands</span>
+<span class="var">bands</span> <span class="op">&lt;-</span> <span class="fn">c</span>(<span class="str">"B1.TIF"</span>,<span class="str">"B2.TIF"</span>,<span class="str">"B3.TIF"</span>,<span class="str">"B4.TIF"</span>)
+<span class="var">landsat_data</span> <span class="op">&lt;-</span> <span class="fn">rast</span>(bands)
+<span class="fn">names</span>(landsat_data) <span class="op">&lt;-</span> <span class="fn">c</span>(<span class="str">"Blue"</span>,<span class="str">"Green"</span>,<span class="str">"Red"</span>,<span class="str">"NIR"</span>)
+
+<span class="cm"># True Color Composite (RGB)</span>
+<span class="fn">plotRGB</span>(landsat_data, r<span class="op">=</span><span class="nm">3</span>, g<span class="op">=</span><span class="nm">2</span>, b<span class="op">=</span><span class="nm">1</span>)
+
+<span class="cm"># False Color (NIR, Red, Green) — vegetation appears RED</span>
+<span class="fn">plotRGB</span>(landsat_data, r<span class="op">=</span><span class="nm">4</span>, g<span class="op">=</span><span class="nm">3</span>, b<span class="op">=</span><span class="nm">2</span>, stretch<span class="op">=</span><span class="str">"lin"</span>,
+        main<span class="op">=</span><span class="str">"False Color Composite"</span>)</pre>
+    </div>
+    <h2>DEM — Digital Elevation Model</h2>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — 3D DEM with rayshader</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">terra</span>); <span class="fn">library</span>(<span class="pkg">rayshader</span>)
+
+<span class="var">dem</span> <span class="op">&lt;-</span> <span class="fn">rast</span>(<span class="str">"BCM_DEM.tif"</span>)
+<span class="var">dem</span>[<span class="fn">is.na</span>(dem)] <span class="op">&lt;-</span> <span class="nm">0</span>
+
+<span class="var">el_matrix</span> <span class="op">&lt;-</span> <span class="fn">raster_to_matrix</span>(dem)
+
+el_matrix <span class="op">%&gt;%</span>
+  <span class="fn">sphere_shade</span>(texture<span class="op">=</span><span class="str">"desert"</span>) <span class="op">%&gt;%</span>
+  <span class="fn">add_shadow</span>(<span class="fn">ray_shade</span>(el_matrix, zscale<span class="op">=</span><span class="nm">33</span>), <span class="nm">0.5</span>) <span class="op">%&gt;%</span>
+  <span class="fn">plot_3d</span>(el_matrix, zscale<span class="op">=</span><span class="nm">10</span>, fov<span class="op">=</span><span class="nm">0</span>, theta<span class="op">=</span><span class="nm">135</span>, zoom<span class="op">=</span><span class="nm">0.75</span>, phi<span class="op">=</span><span class="nm">45</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 2.5 BANDS & NDVI -->
+  <div class="content-section" id="sec-bands">
+    <div class="breadcrumb"><span>Chapter 2</span><span class="sep">›</span><span class="current">Spectral Bands &amp; NDVI</span></div>
+    <div class="section-tag">2.5 Spectral Analysis</div>
+    <h1>Spectral Bands &amp; NDVI</h1>
+    <p class="subtitle">Satellites capture light beyond what the human eye can see — these are stored as separate bands.</p>
+    <h2>Landsat Band Overview</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Band</th><th>Name</th><th>Use Case</th></tr>
+      <tr><td>Band 1</td><td>Blue</td><td>Water body analysis</td></tr>
+      <tr><td>Band 2</td><td>Green</td><td>Vegetation greenness</td></tr>
+      <tr><td>Band 3</td><td>Red</td><td>Chlorophyll absorption</td></tr>
+      <tr><td>Band 4</td><td>Near-Infrared (NIR)</td><td>Vegetation health — plants reflect NIR intensely</td></tr>
+    </table></div>
+    <h2>NDVI — Vegetation Index</h2>
+    <p>NDVI (Normalized Difference Vegetation Index) measures plant health using the formula:</p>
+    <div class="callout green"><div class="callout-title">🌿 NDVI Formula</div><strong>NDVI = (Band4 − Band3) / (Band4 + Band3)</strong><br/>Values range from -1 to +1. Higher positive values = denser, healthier vegetation.</div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — NDVI Calculation</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">terra</span>)
+
+<span class="var">band3</span> <span class="op">&lt;-</span> <span class="fn">rast</span>(<span class="str">"LT05_B3.TIF"</span>)   <span class="cm"># Red</span>
+<span class="var">band4</span> <span class="op">&lt;-</span> <span class="fn">rast</span>(<span class="str">"LT05_B4.TIF"</span>)   <span class="cm"># Near-Infrared</span>
+
+<span class="cm"># Calculate NDVI</span>
+<span class="var">ndvi</span> <span class="op">&lt;-</span> (band4 <span class="op">-</span> band3) <span class="op">/</span> (band4 <span class="op">+</span> band3)
+
+<span class="cm"># Apply vegetation color palette</span>
+<span class="var">color_palette</span> <span class="op">&lt;-</span> <span class="fn">colorRampPalette</span>(
+  <span class="fn">c</span>(<span class="str">"blue"</span>,<span class="str">"orange"</span>,<span class="str">"yellow"</span>,<span class="str">"lightgreen"</span>,<span class="str">"darkgreen"</span>)
+)(<span class="nm">100</span>)
+
+<span class="fn">plot</span>(ndvi, col<span class="op">=</span>color_palette, main<span class="op">=</span><span class="str">"NDVI Map"</span>)
+
+<span class="cm"># Save the output</span>
+<span class="fn">writeRaster</span>(ndvi, <span class="str">"Landsat5_NDVI.tif"</span>, overwrite<span class="op">=</span><span class="kw">TRUE</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 3.1 QUERYING -->
+  <div class="content-section" id="sec-querying">
+    <div class="breadcrumb"><span>Chapter 3</span><span class="sep">›</span><span class="current">Querying &amp; Selection</span></div>
+    <div class="section-tag">3.1 Querying</div>
+    <h1>Querying &amp; Spatial Selection</h1>
+    <p class="subtitle">Querying is the process of extracting specific features from a dataset based on conditions.</p>
+    <h2>Attribute-Based Query</h2>
+    <p>Filter features based on their attribute values (like SQL WHERE clauses).</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Attribute Query</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>); <span class="fn">library</span>(<span class="pkg">ggplot2</span>)
+
+<span class="var">districts</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"TS_DISTRICTS_UTM.shp"</span>)
+
+<span class="cm"># Select districts with area less than 2000 sq km</span>
+<span class="var">small_districts</span> <span class="op">&lt;-</span> districts[districts<span class="op">$</span>area <span class="op">&lt;</span> <span class="nm">2000</span>, ]
+
+<span class="fn">ggplot</span>() <span class="op">+</span>
+  <span class="fn">geom_sf</span>(data<span class="op">=</span>districts,      fill<span class="op">=</span><span class="str">"white"</span>) <span class="op">+</span>
+  <span class="fn">geom_sf</span>(data<span class="op">=</span>small_districts, fill<span class="op">=</span><span class="str">"pink"</span>, color<span class="op">=</span><span class="str">"black"</span>) <span class="op">+</span>
+  <span class="fn">labs</span>(title<span class="op">=</span><span class="str">"Districts with Area &lt; 2000"</span>)</pre>
+    </div>
+    <h2>Spatial Selection (Multi-Layer)</h2>
+    <p>Select features from one layer based on their spatial relationship with features in another layer.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Spatial Selection</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">terra</span>)
+
+<span class="var">districts</span> <span class="op">&lt;-</span> <span class="fn">vect</span>(<span class="str">"TS_DISTRICTS_UTM.shp"</span>)
+<span class="var">road</span>      <span class="op">&lt;-</span> <span class="fn">vect</span>(<span class="str">"NH44.shp"</span>)
+
+<span class="cm"># Ensure same CRS</span>
+<span class="kw">if</span> (<span class="fn">crs</span>(districts) <span class="op">!=</span> <span class="fn">crs</span>(road)) {
+  road <span class="op">&lt;-</span> <span class="fn">project</span>(road, districts)
+}
+
+<span class="cm"># Find districts that intersect the highway</span>
+<span class="var">intersects_logic</span>    <span class="op">&lt;-</span> <span class="fn">relate</span>(districts, road, <span class="str">"intersects"</span>)
+<span class="var">intersecting_districts</span> <span class="op">&lt;-</span> districts[<span class="fn">as.vector</span>(intersects_logic), ]
+
+<span class="fn">plot</span>(districts, col<span class="op">=</span><span class="str">"lightgray"</span>, main<span class="op">=</span><span class="str">"Districts Intersecting NH44"</span>)
+<span class="fn">plot</span>(intersecting_districts, col<span class="op">=</span><span class="str">"red"</span>, add<span class="op">=</span><span class="kw">TRUE</span>)
+<span class="fn">plot</span>(road, col<span class="op">=</span><span class="str">"yellow"</span>, lwd<span class="op">=</span><span class="nm">2</span>, add<span class="op">=</span><span class="kw">TRUE</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 3.2 GEO TOOLS -->
+  <div class="content-section" id="sec-geotools">
+    <div class="breadcrumb"><span>Chapter 3</span><span class="sep">›</span><span class="current">Geo Processing Tools</span></div>
+    <div class="section-tag">3.2 Geo Processing</div>
+    <h1>Geo Processing Tools</h1>
+    <p class="subtitle">Core spatial analysis operations: Buffer, Dissolve, Merge, Union, Clip, and Intersection.</p>
+    <h2>1. Buffer Creation</h2>
+    <p>Generating zones of a specified distance around geographic features.</p>
+    <div class="cards">
+      <div class="card"><div class="card-icon">📍</div><div class="card-title">Point Buffer</div><div class="card-desc">Creates a circle around a point (e.g., 500m around a hospital).</div></div>
+      <div class="card"><div class="card-icon">〰️</div><div class="card-title">Line Buffer</div><div class="card-desc">Creates a corridor along a line (e.g., 1km either side of a road).</div></div>
+      <div class="card"><div class="card-icon">⬡</div><div class="card-title">Polygon Buffer</div><div class="card-desc">Expands or shrinks a polygon (e.g., buffer around a lake).</div></div>
+    </div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Buffer Operations</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>); <span class="fn">library</span>(<span class="pkg">ggplot2</span>)
+
+<span class="var">mandals</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"Adi_mandals.shp"</span>) <span class="op">%&gt;%</span> <span class="fn">st_transform</span>(<span class="nm">32644</span>)
+<span class="var">canal</span>   <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"canal.shp"</span>) <span class="op">%&gt;%</span> <span class="fn">st_transform</span>(<span class="nm">32644</span>)
+
+<span class="cm"># Polygon Buffer — 2km around specific mandals</span>
+<span class="var">mandals_list</span>     <span class="op">&lt;-</span> <span class="fn">c</span>(<span class="str">"UTNOOR"</span>,<span class="str">"TAMSI"</span>,<span class="str">"NERADIGONDA"</span>)
+<span class="var">multiple_mandals</span> <span class="op">&lt;-</span> mandals[mandals<span class="op">$</span>Sub_dist <span class="op">%in%</span> mandals_list, ]
+<span class="var">multiple_buffers</span> <span class="op">&lt;-</span> <span class="fn">st_buffer</span>(multiple_mandals, dist<span class="op">=</span><span class="nm">2000</span>)
+
+<span class="cm"># Line Buffer — 2km along canal</span>
+<span class="var">canal_buffer</span> <span class="op">&lt;-</span> <span class="fn">st_buffer</span>(canal, dist<span class="op">=</span><span class="nm">2000</span>)</pre>
+    </div>
+    <h2>2. Dissolve</h2>
+    <p>Removes internal boundaries between features that share a common attribute. E.g., dissolving districts into zones.</p>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Dissolve</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>); <span class="fn">library</span>(<span class="pkg">dplyr</span>)
+
+<span class="var">villages</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"Adi_rev.shp"</span>)
+
+<span class="cm"># Dissolve villages into mandals by Sub_dist attribute</span>
+<span class="var">mandals</span> <span class="op">&lt;-</span> villages <span class="op">%&gt;%</span>
+  <span class="fn">group_by</span>(Sub_dist) <span class="op">%&gt;%</span>
+  <span class="fn">summarize</span>(geometry <span class="op">=</span> <span class="fn">st_union</span>(geometry))
+
+<span class="fn">st_write</span>(mandals, <span class="str">"Adi_mandals.shp"</span>)</pre>
+    </div>
+    <h2>3. Merge vs Dissolve</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Operation</th><th>What it does</th><th>SQL Equivalent</th></tr>
+      <tr><td>Merge</td><td>Combines multiple layers into one. All features retained. No boundary removal.</td><td>UNION ALL</td></tr>
+      <tr><td>Dissolve</td><td>Fuses features within one layer based on shared attribute. Boundaries erased.</td><td>GROUP BY</td></tr>
+    </table></div>
+    <h2>4. Clip &amp; Intersection</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Operation</th><th>Attributes Kept</th><th>Description</th></tr>
+      <tr><td>Clip</td><td>From input layer only</td><td>Cuts input layer to the boundary of clip layer</td></tr>
+      <tr><td>Intersection</td><td>From BOTH layers</td><td>Keeps only overlapping portions with attributes from both</td></tr>
+    </table></div>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Intersection</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>)
+
+<span class="var">villages</span>     <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"Adi_rev.shp"</span>) <span class="op">%&gt;%</span> <span class="fn">st_transform</span>(<span class="nm">32644</span>)
+<span class="var">canal_buffer</span> <span class="op">&lt;-</span> <span class="fn">st_read</span>(<span class="str">"canal_buffer.shp"</span>) <span class="op">%&gt;%</span> <span class="fn">st_transform</span>(<span class="nm">32644</span>)
+
+<span class="cm"># Intersection keeps attributes from BOTH layers</span>
+<span class="var">canal_intersect</span> <span class="op">&lt;-</span> <span class="fn">st_intersection</span>(canal_buffer, villages)
+
+<span class="fn">st_write</span>(canal_intersect, <span class="str">"canal_intersect.shp"</span>, delete_layer<span class="op">=</span><span class="kw">TRUE</span>)</pre>
+    </div>
+  </div>
+
+  <!-- 3.3 STATS -->
+  <div class="content-section" id="sec-stats">
+    <div class="breadcrumb"><span>Chapter 3</span><span class="sep">›</span><span class="current">Statistical Analysis</span></div>
+    <div class="section-tag">3.3 Statistics</div>
+    <h1>Statistical Analysis</h1>
+    <p class="subtitle">Collecting, organizing, analyzing, and interpreting data to discover patterns and make decisions.</p>
+    <h2>Filtering &amp; Querying CSV Data</h2>
+    <div class="code-block">
+      <div class="console-header"><div class="console-dots"><span></span><span></span><span></span></div><span class="console-lang">R — Statistical Analysis</span><button class="console-copy" onclick="copyCode(this)">⎘ Copy</button></div>
+      <pre><span class="fn">library</span>(<span class="pkg">sf</span>)
+
+<span class="cm"># Read the CSV file</span>
+<span class="var">students</span> <span class="op">&lt;-</span> <span class="fn">read.csv</span>(<span class="str">"student.csv"</span>)
+
+<span class="cm"># Filter students with GIS marks less than 35</span>
+<span class="var">result</span> <span class="op">&lt;-</span> <span class="fn">subset</span>(students, GIS <span class="op">&lt;</span> <span class="nm">35</span>)
+<span class="fn">print</span>(result)
+
+<span class="cm"># Plot the distribution as a histogram</span>
+<span class="fn">hist</span>(result<span class="op">$</span>GIS,
+  main   <span class="op">=</span> <span class="str">"Distribution of GIS Marks (Below 35)"</span>,
+  xlab   <span class="op">=</span> <span class="str">"GIS Marks"</span>,
+  ylab   <span class="op">=</span> <span class="str">"Number of Students"</span>,
+  col    <span class="op">=</span> <span class="str">"salmon"</span>,
+  border <span class="op">=</span> <span class="str">"white"</span>,
+  breaks <span class="op">=</span> <span class="nm">5</span>)</pre>
+    </div>
+    <h2>Common Statistical Functions</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Function</th><th>Description</th></tr>
+      <tr><td>mean(x)</td><td>Calculate arithmetic mean</td></tr>
+      <tr><td>median(x)</td><td>Find the middle value</td></tr>
+      <tr><td>sd(x)</td><td>Standard deviation</td></tr>
+      <tr><td>summary(x)</td><td>Min, Max, Mean, Quartiles at once</td></tr>
+      <tr><td>cor(x, y)</td><td>Correlation between two variables</td></tr>
+      <tr><td>lm(y ~ x)</td><td>Linear regression model</td></tr>
+    </table></div>
+    <div class="callout green"><div class="callout-title">✅ Summary</div>R's statistical power combined with GIS makes it uniquely suited for spatial data science — from exploratory data analysis to advanced spatial modeling.</div>
+  </div>
+
+</main>
+</div>
+
+<script>
+  /* THEME */
+  function toggleTheme() {
+    var isLight = document.documentElement.classList.toggle('light');
+    document.getElementById('themeIcon').textContent  = isLight ? '🌙' : '☀️';
+    document.getElementById('themeLabel').textContent = isLight ? 'Dark' : 'Light';
+    try { localStorage.setItem('rTheme', isLight ? 'light' : 'dark'); } catch(e){}
+  }
+  (function() {
+    try {
+      if (localStorage.getItem('rTheme') === 'light') {
+        document.documentElement.classList.add('light');
+        document.addEventListener('DOMContentLoaded', function() {
+          document.getElementById('themeIcon').textContent  = '🌙';
+          document.getElementById('themeLabel').textContent = 'Dark';
+        });
+      }
+    } catch(e) {}
+  })();
+
+  /* SIDEBAR */
+  function toggleChapter(el) {
+    var topics = el.nextElementSibling;
+    var isOpen = topics.classList.contains('open');
+    el.classList.toggle('open', !isOpen);
+    topics.classList.toggle('open', !isOpen);
+  }
+
+  function showSection(id, topicEl) {
+    document.querySelectorAll('.content-section').forEach(function(s){ s.classList.remove('active'); });
+    var target = document.getElementById('sec-' + id);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.sidebar-topic').forEach(function(t){ t.classList.remove('active'); });
+    if (topicEl) {
+      topicEl.classList.add('active');
+      topicEl.parentElement.classList.add('open');
+      topicEl.parentElement.previousElementSibling.classList.add('open');
+    } else {
+      document.querySelectorAll('.sidebar-topic').forEach(function(t) {
+        if (t.getAttribute('onclick') && t.getAttribute('onclick').indexOf("'" + id + "'") !== -1) {
+          t.classList.add('active');
+          t.parentElement.classList.add('open');
+          t.parentElement.previousElementSibling.classList.add('open');
+        }
+      });
+    }
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+
+  /* COPY CODE */
+  function copyCode(btn) {
+    var pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(function() {
+      btn.classList.add('copied'); btn.textContent = '✓ Copied';
+      setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = '⎘ Copy'; }, 2000);
+    });
+  }
+
+  /* SEARCH */
+  function searchTopics(query) {
+    if (!query) return;
+    var q = query.toLowerCase();
+    var map = {
+      'intro':['introduction','r language','overview'],
+      'geospatial':['geospatial','gis','spatial'],
+      'datatypes':['data type','vector','matrix','data frame','list','numeric'],
+      'syntax':['syntax','variable','assignment','comment','print'],
+      'compilers':['compiler','rstudio','colab','ide','install'],
+      'packages':['package','library','sf','terra','ggplot'],
+      'inputdata':['input','csv','raster','shapefile','read'],
+      'datamani':['manipulation','dplyr','filter','mutate','wrangle'],
+      'vectorvis':['vector','point','line','polygon','visualization'],
+      'thematic':['choropleth','heat map','kde','cluster','thematic'],
+      'crs':['crs','projection','epsg','transform','coordinate'],
+      'rastervis':['raster','satellite','dem','elevation','pixel'],
+      'bands':['band','ndvi','landsat','spectral','infrared','nir'],
+      'querying':['query','select','intersect','attribute','filter'],
+      'geotools':['buffer','dissolve','merge','clip','union','intersection'],
+      'stats':['statistic','histogram','mean','regression','analysis']
+    };
+    for (var id in map) {
+      var kws = map[id];
+      for (var i=0;i<kws.length;i++) {
+        if (kws[i].indexOf(q)!==-1 || q.indexOf(kws[i])!==-1) { showSection(id,null); return; }
+      }
+    }
+  }
+  document.getElementById('searchInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') searchTopics(this.value);
+  });
+
+  /* ─── PREV / NEXT SECTION NAV ─── */
+  var THEORY_SECTIONS = [
+    {id:'welcome',   label:'Home'},
+    {id:'intro',     label:'Introduction to R'},
+    {id:'geospatial',label:'R in Geospatial Tech'},
+    {id:'datatypes', label:'Data Types & Structures'},
+    {id:'syntax',    label:'Basic R Syntax'},
+    {id:'compilers', label:'Compilers & IDEs'},
+    {id:'packages',  label:'Packages in R'},
+    {id:'inputdata', label:'Input Data in R'},
+    {id:'datamani',  label:'Data Manipulation'},
+    {id:'vectorvis', label:'Vector Data Visualization'},
+    {id:'thematic',  label:'Thematic Mapping'},
+    {id:'crs',       label:'CRS & Projections'},
+    {id:'rastervis', label:'Raster Data Visualization'},
+    {id:'bands',     label:'Spectral Bands & NDVI'},
+    {id:'querying',  label:'Querying & Selection'},
+    {id:'geotools',  label:'Geo Processing Tools'},
+    {id:'stats',     label:'Statistical Analysis'}
+  ];
+
+  function buildTheoryNav(idx) {
+    var prev = idx > 0 ? THEORY_SECTIONS[idx-1] : null;
+    var next = idx < THEORY_SECTIONS.length-1 ? THEORY_SECTIONS[idx+1] : null;
+    var center = '<span class="sec-nav-center">' + (idx+1) + ' / ' + THEORY_SECTIONS.length + '</span>';
+    var prevBtn = prev
+      ? '<button class="sec-nav-btn prev" onclick="showSection(\''+prev.id+'\',null);window.scrollTo(0,0)">'
+        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>'
+        + '<span class="sec-nav-label"><span class="sec-nav-dir">Previous</span><span class="sec-nav-name">'+prev.label+'</span></span>'
+        + '</button>'
+      : '<span></span>';
+    var nextBtn = next
+      ? '<button class="sec-nav-btn next" onclick="showSection(\''+next.id+'\',null);window.scrollTo(0,0)">'
+        + '<span class="sec-nav-label"><span class="sec-nav-dir">Next</span><span class="sec-nav-name">'+next.label+'</span></span>'
+        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+        + '</button>'
+      : '<span></span>';
+    return '<div class="section-nav">' + prevBtn + center + nextBtn + '</div>';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    THEORY_SECTIONS.forEach(function(sec, idx) {
+      var el = document.getElementById('sec-' + sec.id);
+      if (el) {
+        var nav = document.createElement('div');
+        nav.innerHTML = buildTheoryNav(idx);
+        el.appendChild(nav.firstChild);
+      }
+    });
+  });
+</script>
+</body>
+</html>

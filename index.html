@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GIS with R — Study Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0d1117;--panel-bg:#161b22;--panel-border:#21262d;--accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;--text:#e6edf3;--text-muted:#8b949e;--text-dim:#6e7681;--hover:#1c2128;--header-h:64px;}
+:root.light{--bg:#f6f8fa;--panel-bg:#fff;--panel-border:#d0d7de;--accent:#0969da;--accent2:#1a7f37;--accent3:#cf222e;--accent4:#8250df;--text:#24292f;--text-muted:#57606a;--text-dim:#6e7781;--hover:#eaeef2;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+header{height:var(--header-h);background:var(--panel-bg);border-bottom:1px solid var(--panel-border);display:flex;align-items:center;padding:0 32px;position:sticky;top:0;z-index:100;gap:16px;}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;color:var(--text);}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#1a6fe6,#58a6ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;color:#fff;}
+.header-badge{background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:var(--accent);font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:600;letter-spacing:0.04em;}
+.theme-btn{margin-left:auto;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-muted);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:0.75rem;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+.theme-btn:hover{border-color:var(--accent);color:var(--text);}
+.hero{text-align:center;padding:80px 24px 60px;max-width:700px;margin:0 auto;}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.2);color:var(--accent);font-size:0.72rem;padding:4px 12px;border-radius:20px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:20px;}
+.hero h1{font-size:2.8rem;font-weight:700;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;}
+.hero h1 span{background:linear-gradient(135deg,#58a6ff,#d2a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--text-muted);font-size:1rem;line-height:1.75;font-weight:300;margin-bottom:40px;max-width:520px;margin-left:auto;margin-right:auto;}
+.nav-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:900px;margin:0 auto;padding:0 24px 80px;}
+.nav-card{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px;text-decoration:none;color:inherit;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;position:relative;overflow:hidden;}
+.nav-card::before{content:'';position:absolute;inset:0;background:var(--card-glow);opacity:0;transition:opacity 0.2s;}
+.nav-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.3);}
+.nav-card:hover::before{opacity:1;}
+.nav-card.theory{--card-glow:linear-gradient(135deg,rgba(88,166,255,0.05),rgba(210,168,255,0.03));}
+.nav-card.theory:hover{border-color:var(--accent);}
+.nav-card.lab{--card-glow:linear-gradient(135deg,rgba(63,185,80,0.05),rgba(88,166,255,0.03));}
+.nav-card.lab:hover{border-color:var(--accent2);}
+.nav-card-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;}
+.nav-card.theory .nav-card-icon{background:rgba(88,166,255,0.12);}
+.nav-card.lab .nav-card-icon{background:rgba(63,185,80,0.12);}
+.nav-card-label{font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;}
+.nav-card.theory .nav-card-label{color:var(--accent);}
+.nav-card.lab .nav-card-label{color:var(--accent2);}
+.nav-card h2{font-size:1.35rem;font-weight:700;color:var(--text);line-height:1.2;}
+.nav-card p{color:var(--text-muted);font-size:0.84rem;line-height:1.65;font-weight:300;flex:1;}
+.nav-card-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--hover);border:1px solid var(--panel-border);color:var(--text-dim);font-size:0.68rem;padding:3px 9px;border-radius:20px;font-weight:500;}
+.nav-card-arrow{display:flex;align-items:center;justify-content:flex-end;color:var(--text-dim);transition:color 0.15s,transform 0.15s;}
+.nav-card:hover .nav-card-arrow{color:var(--accent);transform:translateX(4px);}
+.nav-card.lab:hover .nav-card-arrow{color:var(--accent2);}
+.section-divider{text-align:center;padding:16px 24px 0;color:var(--text-dim);font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;}
+@media(max-width:600px){.hero h1{font-size:1.9rem;}.nav-cards{grid-template-columns:1fr;}.hero{padding:48px 20px 40px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-icon">R</div>GIS with R</div>
+  <span class="header-badge">Study Notes</span>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">📘 R Programming &amp; GIS</div>
+  <h1>Concepts of <span>R</span><br>Study Hub</h1>
+  <p>A complete study resource covering R programming fundamentals, geospatial analysis, visualization, and hands-on GIS lab exercises.</p>
+</div>
+
+<div class="section-divider">Choose a section to begin</div>
+
+<div class="nav-cards">
+  <a href="theory.html" class="nav-card theory">
+    <div class="nav-card-icon">📖</div>
+    <div class="nav-card-label">Chapters 1 · 2 · 3</div>
+    <h2>Theory &amp; Notes</h2>
+    <p>All three chapters — R Basics, Visualization techniques, and GIS Analysis — with explanations, tables, and annotated code examples.</p>
+    <div class="nav-card-chips">
+      <span class="chip">R Basics</span>
+      <span class="chip">Data Types</span>
+      <span class="chip">Packages</span>
+      <span class="chip">Visualization</span>
+      <span class="chip">CRS &amp; Projections</span>
+      <span class="chip">NDVI</span>
+      <span class="chip">Geoprocessing</span>
+    </div>
+    <div class="nav-card-arrow">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+  </a>
+
+  <a href="lab.html" class="nav-card lab">
+    <div class="nav-card-icon">🧪</div>
+    <div class="nav-card-label">Lab Exercises</div>
+    <h2>Lab Practice</h2>
+    <p>Hands-on practical exercises following the lab manual exactly — CSV data, vector spatial files, raster imagery, attribute tables, queries, digital image processing, and geoprocessing.</p>
+    <div class="nav-card-chips">
+      <span class="chip">CSV &amp; Plots</span>
+      <span class="chip">Shapefiles</span>
+      <span class="chip">Raster &amp; DEM</span>
+      <span class="chip">NDVI / NDWI</span>
+      <span class="chip">Buffer</span>
+      <span class="chip">Clip &amp; Merge</span>
+      <span class="chip">Queries</span>
+    </div>
+    <div class="nav-card-arrow">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+  </a>
+</div>
+
+<script>
+function toggleTheme(){var l=document.documentElement.classList.toggle('light');document.getElementById('themeIcon').textContent=l?'🌙':'☀️';document.getElementById('themeLabel').textContent=l?'Dark':'Light';try{localStorage.setItem('rTheme',l?'light':'dark');}catch(e){}}
+(function(){try{if(localStorage.getItem('rTheme')==='light'){document.documentElement.classList.add('light');document.addEventListener('DOMContentLoaded',function(){document.getElementById('themeIcon').textContent='🌙';document.getElementById('themeLabel').textContent='Dark';});}}catch(e){}})();
+</script>
+</body>
+</html>
