@@ -6,6 +6,7 @@
   <link rel="shortcut icon" type="image/png" href="lab.png"/>
 <title>GIS with R — Lab</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="auth.js"></script>
 <style>
   :root {
     --bg:#0d1117;--sidebar-bg:#0a0e14;--panel-bg:#161b22;--panel-border:#21262d;
@@ -696,6 +697,9 @@
 </div>
 
 <script>
+/* ─── AUTH ─── */
+requireAuth();
+
 /* ─── THEME ─── */
 function toggleTheme() {
   var isLight = document.documentElement.classList.toggle('light');
