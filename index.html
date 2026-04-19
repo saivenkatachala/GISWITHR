@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GIS with R — Study Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="auth.js"></script>
 <style>
 :root{--bg:#0d1117;--panel-bg:#161b22;--panel-border:#21262d;--accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;--text:#e6edf3;--text-muted:#8b949e;--text-dim:#6e7681;--hover:#1c2128;--header-h:64px;}
 :root.light{--bg:#f6f8fa;--panel-bg:#fff;--panel-border:#d0d7de;--accent:#0969da;--accent2:#1a7f37;--accent3:#cf222e;--accent4:#8250df;--text:#24292f;--text-muted:#57606a;--text-dim:#6e7781;--hover:#eaeef2;}
@@ -104,6 +105,9 @@ header{height:var(--header-h);background:var(--panel-bg);border-bottom:1px solid
 </div>
 
 <script>
+// ── Auth guard ──
+requireAuth();
+
 function toggleTheme(){var l=document.documentElement.classList.toggle('light');document.getElementById('themeIcon').textContent=l?'🌙':'☀️';document.getElementById('themeLabel').textContent=l?'Dark':'Light';try{localStorage.setItem('rTheme',l?'light':'dark');}catch(e){}}
 (function(){try{if(localStorage.getItem('rTheme')==='light'){document.documentElement.classList.add('light');document.addEventListener('DOMContentLoaded',function(){document.getElementById('themeIcon').textContent='🌙';document.getElementById('themeLabel').textContent='Dark';});}}catch(e){}})();
 </script>
