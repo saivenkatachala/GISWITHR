@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>GIS with R — Study Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="auth.js"></script>
 <style>
 :root{--bg:#0d1117;--panel-bg:#161b22;--panel-border:#21262d;--accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;--text:#e6edf3;--text-muted:#8b949e;--text-dim:#6e7681;--hover:#1c2128;--header-h:64px;}
 :root.light{--bg:#f6f8fa;--panel-bg:#fff;--panel-border:#d0d7de;--accent:#0969da;--accent2:#1a7f37;--accent3:#cf222e;--accent4:#8250df;--text:#24292f;--text-muted:#57606a;--text-dim:#6e7781;--hover:#eaeef2;}
@@ -16,8 +15,23 @@ header{height:var(--header-h);background:var(--panel-bg);border-bottom:1px solid
 .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;color:var(--text);}
 .logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#1a6fe6,#58a6ff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;color:#fff;}
 .header-badge{background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:var(--accent);font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:600;letter-spacing:0.04em;}
-.theme-btn{margin-left:auto;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-muted);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:0.75rem;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+.theme-btn{background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text-muted);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:0.75rem;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
 .theme-btn:hover{border-color:var(--accent);color:var(--text);}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.profile-widget{position:relative;}
+.profile-btn{display:flex;align-items:center;gap:7px;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:6px;padding:4px 10px 4px 6px;cursor:pointer;color:var(--text-muted);font-family:'Sora',sans-serif;font-size:0.75rem;transition:all .15s;}
+.profile-btn:hover{border-color:var(--accent);color:var(--text);}
+.profile-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#1a6fe6,#58a6ff);color:#fff;font-size:0.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sora',sans-serif;}
+.profile-name{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.profile-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:10px;min-width:200px;box-shadow:0 16px 40px rgba(0,0,0,.35);opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;transition:opacity .15s,transform .15s;z-index:999;}
+.profile-dropdown.open{opacity:1;transform:none;pointer-events:auto;}
+.profile-dropdown-header{display:flex;align-items:center;gap:10px;padding:14px 14px 12px;}
+.profile-avatar-lg{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1a6fe6,#58a6ff);color:#fff;font-size:0.95rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sora',sans-serif;}
+.profile-dropdown-name{font-size:0.82rem;font-weight:600;color:var(--text);}
+.profile-dropdown-sub{font-size:0.7rem;color:var(--text-dim);margin-top:1px;}
+.profile-dropdown-divider{height:1px;background:var(--panel-border);}
+.profile-dropdown-item{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-family:'Sora',sans-serif;font-size:0.78rem;transition:background .12s,color .12s;border-radius:0 0 10px 10px;}
+.profile-dropdown-item:hover{background:var(--hover);color:var(--accent3)!important;}
 .hero{text-align:center;padding:80px 24px 60px;max-width:700px;margin:0 auto;}
 .hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.2);color:var(--accent);font-size:0.72rem;padding:4px 12px;border-radius:20px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:20px;}
 .hero h1{font-size:2.8rem;font-weight:700;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;}
@@ -53,7 +67,9 @@ header{height:var(--header-h);background:var(--panel-bg);border-bottom:1px solid
 <header>
   <div class="logo"><div class="logo-icon">R</div>GIS with R</div>
   <span class="header-badge">Study Notes</span>
-  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+  <div class="header-right">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+  </div>
 </header>
 
 <div class="hero">
@@ -105,11 +121,87 @@ header{height:var(--header-h);background:var(--panel-bg);border-bottom:1px solid
 </div>
 
 <script>
-// ── Auth guard ──
-requireAuth();
-
+// ── Theme ──
 function toggleTheme(){var l=document.documentElement.classList.toggle('light');document.getElementById('themeIcon').textContent=l?'🌙':'☀️';document.getElementById('themeLabel').textContent=l?'Dark':'Light';try{localStorage.setItem('rTheme',l?'light':'dark');}catch(e){}}
-(function(){try{if(localStorage.getItem('rTheme')==='light'){document.documentElement.classList.add('light');document.addEventListener('DOMContentLoaded',function(){document.getElementById('themeIcon').textContent='🌙';document.getElementById('themeLabel').textContent='Dark';});}}catch(e){}})();
+(function(){try{if(localStorage.getItem('rTheme')==='light'){document.documentElement.classList.add('light');document.getElementById('themeIcon').textContent='🌙';document.getElementById('themeLabel').textContent='Dark';}}catch(e){}})();
+
+// ── Auth ──
+const SESSION_KEY='gis_session';
+const SESSION_DURATION_MS=12*60*60*1000;
+const APPS_SCRIPT_URL=typeof AUTH_CONFIG!=='undefined'?AUTH_CONFIG.APPS_SCRIPT_URL:'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+function getSession(){try{return JSON.parse(sessionStorage.getItem(SESSION_KEY));}catch{return null;}}
+function isSessionValid(s){return s&&s.token&&s.expiry&&Date.now()<s.expiry;}
+function redirectToLogin(){sessionStorage.removeItem(SESSION_KEY);window.location.href='login.html';}
+
+async function verifySession(s){
+  try{
+    var res=await fetch(APPS_SCRIPT_URL+'?action=verify&token='+encodeURIComponent(s.token)+'&username='+encodeURIComponent(s.username));
+    var d=await res.json();return d.valid===true;
+  }catch{return true;}
+}
+
+async function doLogout(){
+  var s=getSession();
+  if(s&&s.token){try{await fetch(APPS_SCRIPT_URL+'?action=logout&token='+encodeURIComponent(s.token)+'&username='+encodeURIComponent(s.username));}catch{}}
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.href='login.html';
+}
+
+// ── Profile widget ──
+function buildProfileWidget(username){
+  var initial=username.charAt(0).toUpperCase();
+  var w=document.createElement('div');
+  w.className='profile-widget';
+  w.innerHTML=`
+    <button class="profile-btn" id="profileBtn">
+      <div class="profile-avatar">${initial}</div>
+      <span class="profile-name">${username}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="profile-dropdown" id="profileDropdown">
+      <div class="profile-dropdown-header">
+        <div class="profile-avatar-lg">${initial}</div>
+        <div>
+          <div class="profile-dropdown-name">${username}</div>
+          <div class="profile-dropdown-sub">Active session</div>
+        </div>
+      </div>
+      <div class="profile-dropdown-divider"></div>
+      <button class="profile-dropdown-item" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>`;
+  // Insert profile widget before theme button
+  var hr=document.querySelector('.header-right');
+  var tb=document.getElementById('themeBtn');
+  hr.insertBefore(w,tb);
+  document.getElementById('profileBtn').addEventListener('click',function(e){
+    e.stopPropagation();
+    document.getElementById('profileDropdown').classList.toggle('open');
+  });
+  document.addEventListener('click',function(){
+    var dd=document.getElementById('profileDropdown');
+    if(dd)dd.classList.remove('open');
+  });
+}
+
+// ── Boot ──
+document.addEventListener('DOMContentLoaded',async function(){
+  var s=getSession();
+  if(!isSessionValid(s)){redirectToLogin();return;}
+  var ok=await verifySession(s);
+  if(!ok){redirectToLogin();return;}
+  buildProfileWidget(s.username);
+  // Poll every 60s for single-session enforcement
+  setInterval(async function(){
+    var s2=getSession();
+    if(!isSessionValid(s2)){redirectToLogin();return;}
+    var ok2=await verifySession(s2);
+    if(!ok2){alert('You have been signed out because your account was accessed from another device or window.');redirectToLogin();}
+  },60000);
+});
 </script>
 <footer style="text-align:center;padding:24px 16px;border-top:1px solid var(--panel-border);color:var(--text-dim);font-size:0.78rem;font-family:'Sora',sans-serif;margin-top:auto;">
   <span>Designed &amp; Developed by <strong style="color:var(--text-muted)">A SAI VENKAT</strong></span>
