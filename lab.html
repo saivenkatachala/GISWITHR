@@ -1125,13 +1125,13 @@ plot(st_geometry(spatial_data),
 ex('ex-vec-road','6','Loading &amp; Plotting Road Data',
 `library(sf)
 
-road <- st_read("NH44.shp")
+road <- st_read("/content/tg-rd.shp")
 print(head(road))
 
-plot(st_geometry(road),
-     main = "Road Network",
-     col  = "blue",
-     lwd  = 4)`);
+plot(st_geometry(road), 
+    col = "darkblue", 
+    lwd = 1, 
+    main = "Road Network Geometry")
 
 ex('ex-vec-road-shp','7','Plotting Road on Shapefile',
 `library(sf)
